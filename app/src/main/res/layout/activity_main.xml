@@ -118,7 +118,7 @@
         android:layout_height="24dp"
         android:layout_marginTop="@dimen/common_spacing"
         android:src="@drawable/baseline_visibility_24"
-        app:layout_constraintEnd_toEndOf="@id/reviews"
+        app:layout_constraintEnd_toStartOf="@id/reviews"
         app:layout_constraintTop_toTopOf="@id/barrier2"
         android:layout_marginEnd="@dimen/common_spacing" />
 
