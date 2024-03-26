@@ -2,6 +2,7 @@ package ru.netology.nmedia
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import ru.netology.nmedia.databinding.ActivityMainBinding
 
 data class Post(
@@ -20,6 +21,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+
         val post = Post(
             id = 1,
             author = "Нетология. Университет интернет-профессий будущего.",
@@ -34,7 +37,8 @@ class MainActivity : AppCompatActivity() {
             author.text = post.author
             published.text = post.published
             content.text = post.content
-            likes.text = post.likes.toString()
+            likes.text = cutLongNumbers(post.likes)
+            shares.text = cutLongNumbers(post.shares)
             if (post.likedByMe) {
                 NumberOfLikes?.setImageResource(R.drawable.baseline_favorite_24)
             } else NumberOfLikes?.setImageResource(R.drawable.baseline_favorite_border_24)
@@ -52,10 +56,8 @@ class MainActivity : AppCompatActivity() {
                 )
             }
             NumberOfShares?.setOnClickListener {
-                if (post.shared) {
-                    post.shares++
-                }
                 post.shared = !post.shared
+                post.shares++
                 shares.text = cutLongNumbers(post.shares)
             }
         }
@@ -64,9 +66,9 @@ class MainActivity : AppCompatActivity() {
     private fun cutLongNumbers(number: Int): String {
         return when {
             number < 1000 -> number.toString()
-            number < 10_000 -> (number / 1000).toString() + "K"
-            number < 1_000_000 -> String.format("%.1fK", number.toDouble() / 1000)
-            else -> String.format("%.1fM", number.toDouble() / 1_000_000)
+            number < 10_000 -> "${number / 1000}.${(number % 1000) / 100}K"
+            number in 10_000 .. 1_000_000 -> (number / 1000).toString() + "K"
+            else -> "${number / 1_000_000}.${number % 1_000_000 / 100_000}M"
         }
     }
 }
