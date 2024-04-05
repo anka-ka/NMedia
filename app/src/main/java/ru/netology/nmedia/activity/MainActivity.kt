@@ -26,19 +26,13 @@ class MainActivity : AppCompatActivity() {
                     if (post.likedByMe) R.drawable.baseline_favorite_24 else R.drawable.baseline_favorite_border_24
                 )
                 binding.NumberOfLikes.setOnClickListener {
-                    if (post.likedByMe) {
-                        post.likes--
-                    } else {
-                        post.likes++
-                    }
+                    viewModel.changeLikes()
                     viewModel.like()
-                    likes.text = viewModel.cutLongNumbers(post.likes)
                 }
 
                 binding.NumberOfShares.setOnClickListener {
-                    post.shares++
+                    viewModel.changeShares()
                     viewModel.share()
-                    shares.text = viewModel.cutLongNumbers(post.shares)
                 }
             }
         }

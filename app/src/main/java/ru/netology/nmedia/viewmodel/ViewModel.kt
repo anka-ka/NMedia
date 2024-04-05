@@ -1,6 +1,7 @@
 package ru.netology.nmedia.viewmodel
 
 import androidx.lifecycle.ViewModel
+import ru.netology.nmedia.datatransferobjects.Post
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.RepositoryInMemory
 
@@ -12,6 +13,8 @@ class PostViewModel : ViewModel() {
     val data = repository.get()
     fun like() = repository.like()
     fun share() = repository.share()
+    fun changeLikes()= repository.changeLikes()
+    fun changeShares()= repository.changeShares()
 
     fun cutLongNumbers(number: Int): String {
         val formattedNumber = when {
