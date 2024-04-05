@@ -1,141 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="@dimen/common_spacing"
     tools:context=".MainActivity">
+    <LinearLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_height="wrap_content"/>
 
-    <TextView
-        android:id="@+id/author"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:ellipsize="end"
-        android:lines="1"
-        android:text="@string/author"
-        app:layout_constraintBottom_toTopOf="@+id/published"
-        app:layout_constraintEnd_toStartOf="@+id/menu"
-        app:layout_constraintStart_toEndOf="@+id/avatar"
-        app:layout_constraintTop_toTopOf="@+id/avatar" />
-
-    <TextView
-        android:id="@+id/published"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/published"
-        app:layout_constraintBottom_toBottomOf="@+id/avatar"
-        app:layout_constraintEnd_toStartOf="@+id/menu"
-        app:layout_constraintStart_toEndOf="@+id/avatar"
-        app:layout_constraintTop_toBottomOf="@+id/author" />
-
-    <ImageView
-        android:id="@+id/avatar"
-        android:layout_width="@dimen/posts_avatar_size"
-        android:layout_height="@dimen/posts_avatar_size"
-        android:layout_marginBottom="@dimen/common_spacing"
-        app:layout_constraintBottom_toBottomOf="@id/barrier"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_launcher_foreground" />
-
-    <ImageView
-        android:id="@+id/menu"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:background="@android:color/transparent"
-        android:src="@drawable/baseline_more_vert_24"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/barrier"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:barrierDirection="bottom"
-        app:constraint_referenced_ids="avatar,published,menu" />
-
-    <TextView
-        android:id="@+id/content"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/common_spacing"
-        android:layout_marginBottom="@dimen/common_spacing"
-        android:autoLink="web"
-        android:text="@string/content"
-        app:layout_constraintBottom_toBottomOf="@id/barrier2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/barrier" />
-
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/barrier2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:barrierDirection="bottom"
-        app:constraint_referenced_ids="content" />
-
-    <ImageView
-        android:id="@+id/NumberOfLikes"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginTop="@dimen/common_spacing"
-        android:background="@android:color/transparent"
-        android:src="@drawable/baseline_favorite_border_24"
-        app:layout_constraintTop_toTopOf="@id/barrier2" />
-
-    <TextView
-        android:id="@+id/likes"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/small_spacing"
-        android:layout_marginTop="@dimen/common_spacing"
-        android:text="@string/likes"
-        app:layout_constraintStart_toEndOf="@id/NumberOfLikes"
-        app:layout_constraintTop_toTopOf="@id/barrier2" />
-
-    <ImageView
-        android:id="@+id/NumberOfShares"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginStart="@dimen/common_spacing"
-        android:layout_marginTop="@dimen/common_spacing"
-        android:src="@drawable/baseline_polyline_24"
-        app:layout_constraintStart_toEndOf="@id/likes"
-        app:layout_constraintTop_toTopOf="@id/barrier2" />
-
-    <TextView
-        android:id="@+id/shares"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/small_spacing"
-        android:layout_marginTop="@dimen/common_spacing"
-        android:text="@string/shares"
-        app:layout_constraintStart_toEndOf="@+id/NumberOfShares"
-        app:layout_constraintTop_toTopOf="@id/barrier2" />
-
-    <ImageView
-        android:id="@+id/NumberOfReviews"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginTop="@dimen/common_spacing"
-        android:layout_marginEnd="@dimen/common_spacing"
-        android:src="@drawable/baseline_visibility_24"
-        app:layout_constraintEnd_toEndOf="@id/reviews"
-        app:layout_constraintTop_toTopOf="@id/barrier2" />
-
-    <TextView
-        android:id="@+id/reviews"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/small_spacing"
-        android:layout_marginTop="@dimen/common_spacing"
-        android:layout_marginEnd="@dimen/common_spacing"
-        android:text="@string/reviews"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/NumberOfReviews"
-        app:layout_constraintTop_toTopOf="@id/barrier2"
-        app:layout_goneMarginStart="@dimen/small_spacing" />
-
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
