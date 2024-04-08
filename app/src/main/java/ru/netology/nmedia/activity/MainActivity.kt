@@ -16,6 +16,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val viewModel: PostViewModel by viewModels()
+
         val adapter = PostAdapter({
             viewModel.likeById(it.id)
         },{
@@ -24,6 +25,7 @@ class MainActivity : AppCompatActivity() {
         binding.list?.adapter = adapter
         viewModel.data.observe(this) { posts ->
             adapter.submitList(posts)
+
         }
     }
 }

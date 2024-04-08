@@ -10,6 +10,8 @@ interface PostRepository {
     fun likeById(id: Long)
     fun shareById(id: Long)
     fun cutLongNumbers()
+    fun changeLikes()
+    fun changeShares()
 }
 
 class RepositoryInMemory : PostRepository {
@@ -132,5 +134,4 @@ class RepositoryInMemory : PostRepository {
         longNumber.value = posts
         data.value = posts
     }
-
 }
