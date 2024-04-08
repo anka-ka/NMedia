@@ -9,6 +9,8 @@ interface PostRepository {
     fun like()
     fun share()
     fun cutLongNumbers()
+    fun changeLikes()
+    fun changeShares()
 }
 class RepositoryInMemory : PostRepository {
     private var post = Post(
@@ -35,5 +37,17 @@ class RepositoryInMemory : PostRepository {
     override fun cutLongNumbers() {
         longNumber.value = post
         data.value = post
+    }
+
+    override fun changeLikes() {
+           if (post.likedByMe) {
+                post.likes--
+            } else {
+                post.likes++
+            }
+
+    }
+    override fun changeShares(){
+        post.shares++
     }
 }
