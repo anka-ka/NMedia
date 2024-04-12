@@ -29,8 +29,9 @@ class PostViewModel : ViewModel() {
         edited.value = post
     }
     fun changeContentAndSave(content: String) {
-        edited.value?.let {
-            if (it.content != text.trim()) {
+        val text = content.trim()
+        edited.value?.let{
+            if(it.content != text.trim()){
                 repository.save(it.copy(content = text))
             }
         }
