@@ -8,111 +8,19 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/barrier2"
+        android:layout_height="match_parent"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/card_post"
         />
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/list2"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/barrier2"
-        app:layout_constraintTop_toTopOf="@id/barrier"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:listitem="@layout/card_post"
-        />
-    <androidx.constraintlayout.widget.Group
-        android:id="@+id/group"
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/addNewPost"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:constraint_referenced_ids="create,close,edit_content,list2,secondContent,barrier2"
-        />
-    <TextView
-        android:id="@+id/secondContent"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:textSize="18sp"
-        android:textStyle="normal"
-        android:paddingTop="16dp"
-        app:layout_constraintTop_toTopOf="@id/edit_content"
-        app:layout_constraintBottom_toBottomOf="@id/barrier"
-        app:layout_constraintStart_toEndOf="@id/create"
-        app:layout_constraintEnd_toStartOf="@id/close"
-
-        />
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/barrier2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:barrierDirection="top"
-        app:constraint_referenced_ids="create,close,edit_content"
-        />
-    <TextView
-        android:id="@+id/edit_content"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:text="@string/menu_edit_additional"
-        android:padding="2dp"
-        android:textColor="#0F9AE0"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="@id/barrier2"
-        app:layout_constraintStart_toEndOf="@id/create"/>
-
-    <ImageButton
-        android:id="@+id/create"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="48dp"
-        android:background="@android:color/transparent"
-        android:src="@drawable/baseline_create_24"
-        app:layout_constraintBottom_toBottomOf="@+id/content"
-        app:layout_constraintTop_toTopOf="@id/barrier2"
-        app:layout_constraintEnd_toEndOf="@id/edit_content"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent" />
-
-
-    <ImageButton
-        android:id="@+id/close"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src ="@drawable/baseline_close_24"
-        android:background="@android:color/transparent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="@id/barrier"/>
-
-    <EditText
-        android:id="@+id/content"
-        android:layout_width="0dp"
-        android:background="@android:color/transparent"
-        android:hint="@string/description_post_save"
-        android:padding="12dp"
-        android:importantForAutofill="no"
-        android:inputType="textMultiLine"
-        android:maxLines="6"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/save"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_height="wrap_content"/>
-    <ImageButton
-        android:id="@+id/save"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src ="@drawable/outline_check_circle_outline_24"
-        android:background="@android:color/transparent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:contentDescription="@string/description_post_save"/>
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/barrier"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:barrierDirection="top"
-        app:constraint_referenced_ids="content,save"/>
+        android:layout_margin="@dimen/common_spacing"
+        app:srcCompat="@drawable/baseline_add_24" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
