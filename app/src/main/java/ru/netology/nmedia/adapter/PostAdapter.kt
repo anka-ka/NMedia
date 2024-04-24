@@ -41,15 +41,14 @@ class PostViewHolder(
         author.text = post.author
         published.text = post.published
         content.text = post.content
-        likes.text = cutLongNumbers(post.likes)
+        shares.isChecked = post.shared
         shares.text = cutLongNumbers(post.shares)
-        NumberOfLikes.setImageResource(
-            if (post.likedByMe) R.drawable.baseline_favorite_24 else R.drawable.baseline_favorite_border_24
-        )
-        NumberOfLikes.setOnClickListener {
+        likes.isChecked = post.likedByMe
+        likes.text = cutLongNumbers(post.likes)
+        likes.setOnClickListener {
             onInteractionListener.onLike(post)
         }
-        NumberOfShares.setOnClickListener {
+        shares.setOnClickListener {
             onInteractionListener.onShare(post)
         }
         menu.setOnClickListener {
