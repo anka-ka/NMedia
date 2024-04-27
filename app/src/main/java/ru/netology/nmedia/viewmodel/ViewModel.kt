@@ -1,5 +1,7 @@
 package ru.netology.nmedia.viewmodel
 
+import android.content.Intent
+import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import ru.netology.nmedia.datatransferobjects.Post
@@ -31,6 +33,13 @@ class PostViewModel : ViewModel() {
     fun onCloseEditClicked() {
         edited.value = empty
 
+    }
+    fun prepareVideoIntent(post: Post): Intent {
+        val intent = Intent().apply {
+            action = Intent.ACTION_VIEW
+            data = Uri.parse(post.videoLink)
+        }
+        return Intent.createChooser(intent, "video")
     }
     fun changeContentAndSave(content: String) {
         val text = content.trim()

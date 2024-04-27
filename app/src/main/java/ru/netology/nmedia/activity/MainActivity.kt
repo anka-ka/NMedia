@@ -3,17 +3,12 @@ package ru.netology.nmedia
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
-import android.widget.Toast
-import androidx.activity.result.launch
 import androidx.activity.viewModels
 import ru.netology.nmedia.activity.NewPostContract
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostAdapter
 import ru.netology.nmedia.databinding.ActivityMainBinding
 import ru.netology.nmedia.datatransferobjects.Post
-import ru.netology.nmedia.util.AndroidUtils
-import ru.netology.nmedia.util.AndroidUtils.focusAndShowKeyboard
 import ru.netology.nmedia.viewmodel.PostViewModel
 
 
@@ -26,9 +21,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val viewModel: PostViewModel by viewModels()
-        val newPostLauncher = registerForActivityResult(NewPostContract){
+        val newPostLauncher = registerForActivityResult(NewPostContract) {
             val result = it ?:return@registerForActivityResult
             viewModel.changeContentAndSave(result)
+            viewModel.onCloseEditClicked()
+
         }
 
         val adapter = PostAdapter(object : OnInteractionListener {
@@ -55,6 +52,10 @@ class MainActivity : AppCompatActivity() {
 
                 startActivity(shareIntent)
             }
+
+            override fun onPlayVideo(post: Post) {
+                startActivity(viewModel.prepareVideoIntent(post))
+            }
         })
 
         binding.list?.adapter = adapter
@@ -66,33 +67,14 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-//        binding.close.setOnClickListener {
-//            with(binding.content) {
-//                viewModel.onCloseEditClicked()
-//                clearFocus()
-//                AndroidUtils.hideKeyboard(binding.content)
-//            }
-//            binding.group.visibility = View.GONE
-//        }
-//        viewModel.edited.observe(this) { thisPost ->
-//            with(binding.content) {
-//                if (thisPost?.id != 0L) {
-//                    val content = thisPost.content
-//                    setText(content)
-//                    binding.group.visibility = View.VISIBLE
-//                    binding.secondContent.text = content
-//                    focusAndShowKeyboard()
-//                } else {
-//                    binding.group.visibility = View.GONE
-//                    binding.content.setText("")
-//                    clearFocus()
-//                    AndroidUtils.hideKeyboard(binding.content)
-//                }
-//            }
-//        }
+        viewModel.edited.observe(this) { thisPost ->
+            if (thisPost?.id != 0L) {
+                newPostLauncher.launch(thisPost.content)
+            }
+        }
 
         binding.addNewPost?.setOnClickListener {
-           newPostLauncher.launch()
+            newPostLauncher.launch(null)
         }
     }
 }
