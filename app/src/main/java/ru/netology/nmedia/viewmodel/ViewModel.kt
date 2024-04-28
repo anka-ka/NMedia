@@ -1,5 +1,7 @@
 package ru.netology.nmedia.viewmodel
 
+import android.content.Intent
+import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import ru.netology.nmedia.datatransferobjects.Post

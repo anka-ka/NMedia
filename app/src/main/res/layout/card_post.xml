@@ -70,7 +70,7 @@
         app:layout_constraintBottom_toBottomOf="@id/barrier2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/barrier" />
+        app:layout_constraintTop_toBottomOf="@id/videoImage" />
 
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/barrier2"
@@ -124,6 +124,32 @@
         app:layout_constraintStart_toEndOf="@id/NumberOfReviews"
         app:layout_constraintTop_toTopOf="@id/barrier2"
         app:layout_goneMarginStart="@dimen/small_spacing" />
+
+    <ImageView
+        android:id="@+id/videoImage"
+        android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/misty_mountain"
+        app:layout_constraintTop_toBottomOf="@id/barrier" />
+
+    <ImageButton
+        android:id="@+id/playVideo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:src="@drawable/baseline_play_circle_filled_24"
+        app:layout_constraintBottom_toBottomOf="@id/videoImage"
+        app:layout_constraintTop_toTopOf="@id/videoImage"
+        app:layout_constraintEnd_toEndOf="@id/videoImage"
+        app:layout_constraintStart_toStartOf="@id/videoImage"/>
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/videoGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="videoImage,playVideo" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

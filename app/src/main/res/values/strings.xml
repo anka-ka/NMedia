@@ -1,15 +1,18 @@
 <resources>
     <string name="app_name">Nmedia</string>
     <string name="author" translatable="false">Нетология. Университет интернет-профессий будущего.</string>
-    <string name="published" translatable="false" >21 мая в 19:36</string>
-    <string name="content"  translatable="false" >Привет! Это новая Нетология! Когда-то Нетология начиналась с интенсивов по онлайн-маркетингу. Затем появились курсы по дизайну, разработке, аналитике и управлению. Мы растём сами и помогаем расти студентам: от новичков до увереннных профессионалов. Но самое важное остаётся с нами: мы верим, что в каждом уже есть сила, которая заставляет хотеть больше,бежать быстрее. Наша миссия - помочь встать на путь роста и начать цепочку перемен - http://netolo.gy/fyb </string>
-    <string name="likes"  translatable="false" >10</string>
-    <string name="shares"  translatable="false" >0</string>
-    <string name="reviews"  translatable="false" >0</string>
-    <string name="menu_remove" translatable="false" >Remove</string>
-    <string name="post_text" translatable="false" >Post Text</string>
-    <string name="menu_edit" translatable="false" >Edit</string>
-    <string name="menu_edit_additional" translatable="false" >Edit Message</string>
+    <string name="published" translatable="false">21 мая в 19:36</string>
+    <string name="content" translatable="false">Привет! Это новая Нетология! Когда-то Нетология начиналась с интенсивов по онлайн-маркетингу. Затем появились курсы по дизайну, разработке, аналитике и управлению. Мы растём сами и помогаем расти студентам: от новичков до увереннных профессионалов. Но самое важное остаётся с нами: мы верим, что в каждом уже есть сила, которая заставляет хотеть больше,бежать быстрее. Наша миссия - помочь встать на путь роста и начать цепочку перемен - http://netolo.gy/fyb </string>
+    <string name="likes" translatable="false">10</string>
+    <string name="shares" translatable="false">0</string>
+    <string name="reviews" translatable="false">0</string>
+    <string name="menu_remove" translatable="false">Remove</string>
+    <string name="post_text" translatable="false">Post Text</string>
+    <string name="menu_edit" translatable="false">Edit</string>
+    <string name="menu_edit_additional" translatable="false">Edit Message</string>
     <string name="description_post_save" translatable="false">Сохранить</string>
     <string name="error_empty_content" translatable="false">Content can\'t be empty</string>
+    <string name="chooser_share_post" translatable="false">Share post</string>
+    <string name="add_post" translatable="false">Add post</string>
+    <string name="save" translatable="false">Save</string>
 </resources>

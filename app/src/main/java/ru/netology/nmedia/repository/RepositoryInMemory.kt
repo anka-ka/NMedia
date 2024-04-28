@@ -56,7 +56,8 @@ class RepositoryInMemory : PostRepository {
             likedByMe = false,
             likes = 0,
             shares = 0,
-            shared = false
+            shared = false,
+            videoLink ="https://www.youtube.com/watch?v=1L-5DhhjXEo&ab_channel=GoldenSunset"
         ),
         Post(
             id = nextId++,
@@ -66,7 +67,8 @@ class RepositoryInMemory : PostRepository {
             likedByMe = false,
             likes = 3,
             shares = 0,
-            shared = false
+            shared = false,
+            videoLink ="https://www.youtube.com/watch?v=o1K9MxMkHc8&ab_channel=BeautifulMusicofNature"
         ),
         Post(
             id = nextId++,
@@ -86,7 +88,8 @@ class RepositoryInMemory : PostRepository {
             likedByMe = false,
             likes = 0,
             shares = 0,
-            shared = false
+            shared = false,
+            videoLink = "https://www.youtube.com/watch?v=515an742WVg&ab_channel=%D0%9F%D0%BE%D0%BB%D1%83%D0%BE%D1%81%D1%82%D1%80%D0%BE%D0%B2%D0%A1%D0%BE%D0%BA%D1%80%D0%BE%D0%B2%D0%B8%D1%89"
         ),
         Post(
             id = nextId++,
@@ -96,7 +99,8 @@ class RepositoryInMemory : PostRepository {
             likedByMe = false,
             likes = 9,
             shares = 0,
-            shared = false
+            shared = false,
+            videoLink = "https://www.youtube.com/watch?v=lyh2kAjcmSY&ab_channel=ScenicRelaxation"
         ),
         Post(
             id = nextId++,
