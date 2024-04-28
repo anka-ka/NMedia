@@ -34,13 +34,6 @@ class PostViewModel : ViewModel() {
         edited.value = empty
 
     }
-    fun prepareVideoIntent(post: Post): Intent {
-        val intent = Intent().apply {
-            action = Intent.ACTION_VIEW
-            data = Uri.parse(post.videoLink)
-        }
-        return Intent.createChooser(intent, "video")
-    }
     fun changeContentAndSave(content: String) {
         val text = content.trim()
         edited.value?.let{
