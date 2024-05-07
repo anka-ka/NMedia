@@ -9,7 +9,6 @@ interface PostRepository {
     fun getAll(): LiveData<List<Post>>
     fun likeById(id: Long)
     fun shareById(id: Long)
-    fun cutLongNumbers()
     fun removeById(id: Long)
     fun save(post: Post)
 
@@ -115,7 +114,6 @@ class RepositoryInMemory : PostRepository {
     )
     private val data = MutableLiveData(posts)
 
-    private val longNumber = MutableLiveData(posts)
     override fun getAll(): LiveData<List<Post>> = data
     override fun likeById(id: Long) {
         posts = posts.map {
@@ -136,10 +134,6 @@ class RepositoryInMemory : PostRepository {
         data.value = posts
     }
 
-    override fun cutLongNumbers() {
-        longNumber.value = posts
-        data.value = posts
-    }
 
     override fun removeById(id: Long) {
         posts = posts.filter { it.id != id }

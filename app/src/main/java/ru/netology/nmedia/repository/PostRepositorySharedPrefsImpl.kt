@@ -180,12 +180,6 @@ class PostRepositorySharedPrefsImpl(
         sync()
     }
 
-    override fun cutLongNumbers() {
-        longNumber.value = posts
-        data.value = posts
-        sync()
-    }
-
     override fun removeById(id: Long) {
         posts = posts.filter { it.id != id }
         data.value = posts
