@@ -35,12 +35,12 @@ class PostRepositoryImpl: PostRepository {
         val request = if (post.likedByMe) {
             Request.Builder()
                 .delete()
-                .url("${BASE_URL}/api/posts/${post.id}/likes")
+                .url("${BASE_URL}api/posts/${post.id}/likes")
                 .build()
 
         } else {
             Request.Builder()
-                .url("${BASE_URL}/api/posts/${post.id}/likes")
+                .url("${BASE_URL}api/posts/${post.id}/likes")
                 .post(gson.toJson(post, Post::class.java).toRequestBody(jsonType))
                 .build()
         }
