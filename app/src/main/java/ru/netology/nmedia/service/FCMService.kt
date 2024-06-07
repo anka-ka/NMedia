@@ -1,3 +1,5 @@
+package ru.netology.nmedia.service
+
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -70,7 +72,7 @@ class FCMService : FirebaseMessagingService() {
             PendingIntent.FLAG_IMMUTABLE
         )
         val notification = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(
                 getString(
                     R.string.notification_user_liked,
@@ -87,7 +89,7 @@ class FCMService : FirebaseMessagingService() {
     }
     private fun handleNewPost(content: Post) {
         val notification = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.baseline_notifications_24)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(
                 getString(
                     R.string.notification_user_new_post,
@@ -125,7 +127,7 @@ class FCMService : FirebaseMessagingService() {
         data class Like(
         val postId: Long,
         val userName: String,
-        val postAuthor: String,
+        val postAuthor: String
         )
         data class Post(
             val postId: Long,
