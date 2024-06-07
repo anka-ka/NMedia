@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import ru.netology.nmedia.R
@@ -15,12 +16,17 @@ import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostViewHolder
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.datatransferobjects.Post
+import ru.netology.nmedia.util.StringArg
 import ru.netology.nmedia.viewmodel.PostViewModel
 
 class OnePostFragment : Fragment() {
-    private val viewModel: PostViewModel by viewModels(
-        ownerProducer = ::requireParentFragment
-    )
+    companion object {
+        var Bundle.textArg: String? by StringArg
+    }
+    private val viewModel: PostViewModel by activityViewModels()
+//    private val viewModel: PostViewModel by viewModels(
+//        ownerProducer = ::requireParentFragment
+//    )
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -32,8 +38,8 @@ class OnePostFragment : Fragment() {
             container,
             false
         )
-        viewModel.data.observe(viewLifecycleOwner) { postsList ->
-            val post = postsList.find { it.id == arguments?.textArg?.toLong() } ?: return@observe
+        viewModel.data.observe(viewLifecycleOwner) { model ->
+            val post = model.posts.find { it.id == arguments?.textArg?.toLong() } ?: return@observe
             val viewHolder = PostViewHolder(binding, object : OnInteractionListener {
 
                 override fun onEdit(post: Post) {

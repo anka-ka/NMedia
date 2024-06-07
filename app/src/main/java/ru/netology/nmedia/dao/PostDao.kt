@@ -1,4 +1,6 @@
+@file:Suppress("IMPLICIT_CAST_TO_ANY")
 package ru.netology.nmedia.dao
+
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
