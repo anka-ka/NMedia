@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -78,28 +79,45 @@ class FeedFragment : Fragment() {
         })
 
         binding.list.adapter = adapter
-       viewModel.data.observe(viewLifecycleOwner) { posts ->
-            val newPost = posts.size > adapter.currentList.size
-            adapter.submitList(posts) {
-                if (newPost) binding.list.smoothScrollToPosition(0)
-            }
-        }
 
+        viewModel.data.observe(viewLifecycleOwner){ model ->
+            binding.errorGroup.isVisible = model.error
+            binding.emptyState.isVisible = model.empty
+            binding.progress.isVisible = model.loading
+            adapter.submitList(model.posts)
+
+        }
+        binding.retry.setOnClickListener{
+            viewModel.loadPosts()
+        }
         binding.addNewPost.setOnClickListener {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
-        }
-
-        viewModel.edited.observe(viewLifecycleOwner) { post ->
-            if (post.id == 0L) {
-                return@observe
-            }
-            findNavController().navigate(
-                R.id.action_feedFragment_to_newPostFragment,
-                Bundle().apply {
-                    textArg = post.content
-                }
-            )
-        }
+       }
         return binding.root
     }
 }
+//       viewModel.data.observe(viewLifecycleOwner) { posts ->
+//            val newPost = posts.size > adapter.currentList.size
+//            adapter.submitList(posts) {
+//                if (newPost) binding.list.smoothScrollToPosition(0)
+//            }
+//        }
+//
+//        binding.addNewPost.setOnClickListener {
+//            findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+//        }
+//
+//        viewModel.edited.observe(viewLifecycleOwner) { post ->
+//            if (post.id == 0L) {
+//                return@observe
+//            }
+//            findNavController().navigate(
+//                R.id.action_feedFragment_to_newPostFragment,
+//                Bundle().apply {
+//                    textArg = post.content
+//                }
+//            )
+//        }
+//        return binding.root
+//    }
+//}
