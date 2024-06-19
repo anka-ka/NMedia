@@ -70,6 +70,7 @@ dependencies {
     implementation ("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.firebase:firebase-messaging-ktx:24.0.0")
     implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-vertexai:16.0.0-beta01")
     kapt ("androidx.room:room-compiler:2.6.1")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

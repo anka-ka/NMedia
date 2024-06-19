@@ -8,10 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import ru.netology.nmedia.R
-import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostViewHolder
 import ru.netology.nmedia.databinding.CardPostBinding
@@ -57,7 +55,7 @@ class OnePostFragment : Fragment() {
                 }
 
                 override fun onLike(post: Post) {
-                    viewModel.likeById(post.id)
+                    viewModel.likeById(post)
                 }
 
                 override fun onShare(post: Post) {
