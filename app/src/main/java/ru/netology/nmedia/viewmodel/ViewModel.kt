@@ -9,8 +9,6 @@ import ru.netology.nmedia.util.SingleLiveEvent
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
-import java.io.IOException
-import kotlin.concurrent.thread
 
 private val empty = Post(
     id = 0,
@@ -51,11 +49,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
         })
     }
-
     fun save() {
         edited.value?.let { post ->
             repository.save(post, object : PostRepository.NMediaCallback<Post> {
-                override fun onSuccess(data: List<Post> ) {
+                override fun onSuccess(data: Post) {
                     _postCreated.postValue(Unit)
                 }
 
@@ -85,24 +82,30 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
     fun likeById(post: Post) {
         repository.likeById(post, object : PostRepository.NMediaCallback<Post> {
-            override fun onSuccess(data: List<Post>) {
-                _data.postValue(_data.value?.copy(
-                    posts = _data.value?.posts.orEmpty().map {
-                        if (it.id == post.id) it.copy(likedByMe = true) else it
-                    }
-                ))
+            override fun onSuccess(data: Post) {
+                val model = _data.value ?: return
+                _data.postValue(
+                    model.copy(posts = model.posts.map {
+                        if (it.id == data.id) {
+                            data
+                        } else {
+                            it
+                        }
+                    })
+                )
             }
 
-            override fun onError(e: Exception) {
-                _data.value
+            override fun onError(e: java.lang.Exception) {
+                _data.postValue(FeedModel(error = true))
             }
+
         })
-        loadPosts()
     }
+
 
     fun removeById(id: Long) {
         repository.removeById(id, object : PostRepository.NMediaCallback<Post> {
-            override fun onSuccess(data: List<Post>) {
+            override fun onSuccess(data: Post) {
                 _data.postValue(
                     _data.value?.copy
                         (posts = _data.value?.posts.orEmpty().filter {

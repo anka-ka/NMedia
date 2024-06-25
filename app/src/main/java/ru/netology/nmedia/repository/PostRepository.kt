@@ -12,7 +12,7 @@ interface PostRepository {
     fun save(post: Post, callback: NMediaCallback<Post>)
 
     interface NMediaCallback<T> {
-        fun onSuccess(data: List<Post>)
+        fun onSuccess(data: T)
         fun onError(e: Exception)
     }
 }
