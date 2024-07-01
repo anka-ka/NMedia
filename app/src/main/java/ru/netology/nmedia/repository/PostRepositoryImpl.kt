@@ -15,19 +15,19 @@ import java.util.concurrent.TimeUnit
 
 class PostRepositoryImpl: PostRepository {
     private val client = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
+        .connectTimeout(1, TimeUnit.SECONDS)
         .build()
     private val gson = Gson()
     private val type = object : TypeToken<List<Post>>() {}.type
 
     companion object {
-        private const val BASE_URL = "http://10.0.2.2:9999"
+        const val BASE_URL = "http://10.0.2.2:9999/"
         private val jsonType = "application/json".toMediaType()
     }
 
     override fun getAll(): List<Post> {
         val request = Request.Builder()
-            .url("${BASE_URL}/api/slow/posts")
+            .url("${BASE_URL}api/slow/posts")
             .build()
         val response = client.newCall(request)
             .execute()
@@ -36,7 +36,7 @@ class PostRepositoryImpl: PostRepository {
     }
     override fun getAllAsync(callback: PostRepository.NMediaCallback<List<Post>>) {
         val request = Request.Builder()
-            .url("${BASE_URL}/api/slow/posts")
+            .url("${BASE_URL}api/slow/posts")
             .build()
 
         client.newCall(request)
@@ -63,12 +63,12 @@ class PostRepositoryImpl: PostRepository {
     override fun likeById(post: Post, callback: PostRepository.NMediaCallback<Post>) {
         val request = if (post.likedByMe) {
             Request.Builder()
-                .url("${BASE_URL}/api/posts/${post.id}/likes")
+                .url("${BASE_URL}api/posts/${post.id}/likes")
                 .delete(gson.toJson(post.id).toRequestBody(jsonType))
                 .build()
         } else {
             Request.Builder()
-                .url("${BASE_URL}/api/posts/${post.id}/likes")
+                .url("${BASE_URL}api/posts/${post.id}/likes")
                 .post(gson.toJson(post.id).toRequestBody(jsonType))
                 .build()
         }
@@ -98,7 +98,7 @@ class PostRepositoryImpl: PostRepository {
 
     override fun save(post: Post, callback: PostRepository.NMediaCallback<Post>) {
         val request = Request.Builder()
-            .url("${BASE_URL}/api/slow/posts")
+            .url("${BASE_URL}api/slow/posts")
             .post(gson.toJson(post).toRequestBody(jsonType))
             .build()
         client.newCall(request)
@@ -123,7 +123,7 @@ class PostRepositoryImpl: PostRepository {
     override fun removeById(id: Long, callback: PostRepository.NMediaCallback<Post>) {
         val request = Request.Builder()
             .delete()
-            .url("${BASE_URL}/api/slow/posts/$id")
+            .url("${BASE_URL}api/slow/posts/$id")
             .build()
 
         client.newCall(request)
