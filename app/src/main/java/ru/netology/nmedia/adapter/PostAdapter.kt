@@ -6,9 +6,13 @@ import android.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.RequestOptions
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.datatransferobjects.Post
+import ru.netology.nmedia.repository.PostRepositoryImpl
 
 interface OnInteractionListener{
     fun onLike(post: Post)
@@ -52,6 +56,13 @@ class PostViewHolder(
         likes.isChecked = post.likedByMe
         likes.text = cutLongNumbers(post.likes)
 
+        Glide.with(binding.root)
+            .load("${PostRepositoryImpl.BASE_URL}avatars/${post.authorAvatar}")
+            .placeholder(R.drawable.ic_loading_100dp)
+            .error(R.drawable.baseline_error_24)
+            .timeout(30_000)
+            .apply(RequestOptions.bitmapTransform(RoundedCorners(100)))
+            .into(avatar)
 
         likes.setOnClickListener {
             onInteractionListener.onLike(post)

@@ -9,6 +9,7 @@ data class Post(
     var likes: Int = 0,
     var shares: Int = 0,
     val videoLink: String? = null,
-    var shared: Boolean = false
+    var shared: Boolean = false,
+    val authorAvatar: String = ""
 
 )

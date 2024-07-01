@@ -21,13 +21,13 @@ class PostRepositoryImpl: PostRepository {
     private val type = object : TypeToken<List<Post>>() {}.type
 
     companion object {
-        private const val BASE_URL = "http://10.0.2.2:9999"
+        const val BASE_URL = "http://10.0.2.2:9999/"
         private val jsonType = "application/json".toMediaType()
     }
 
     override fun getAll(): List<Post> {
         val request = Request.Builder()
-            .url("${BASE_URL}/api/slow/posts")
+            .url("${BASE_URL}api/slow/posts")
             .build()
         val response = client.newCall(request)
             .execute()
@@ -36,26 +36,23 @@ class PostRepositoryImpl: PostRepository {
     }
     override fun getAllAsync(callback: PostRepository.NMediaCallback<List<Post>>) {
         val request = Request.Builder()
-            .url("${BASE_URL}/api/slow/posts")
+            .url("${BASE_URL}api/slow/posts")
             .build()
 
         client.newCall(request)
             .enqueue(object : Callback {
 
-                override fun onFailure(call: okhttp3.Call, e: IOException) {
+                override fun onFailure(call: Call, e: IOException) {
                     callback.onError(e)
                 }
 
-                override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
-                    val body = response.body?.string() ?: throw RuntimeException("body is null")
-                    try {
-                        callback.onSuccess(gson.fromJson(response.body?.string(), type))
-                    } catch (e: Exception) {
-                        callback.onError(e)
-                    }
+                override fun onResponse(call: Call, response: Response) = try {
+                    callback.onSuccess(gson.fromJson(response.body?.string(), type))
+                } catch (e: Exception) {
+                    callback.onError(e)
                 }
-
             })
+
 
 
     }
@@ -63,12 +60,12 @@ class PostRepositoryImpl: PostRepository {
     override fun likeById(post: Post, callback: PostRepository.NMediaCallback<Post>) {
         val request = if (post.likedByMe) {
             Request.Builder()
-                .url("${BASE_URL}/api/posts/${post.id}/likes")
+                .url("${BASE_URL}api/posts/${post.id}/likes")
                 .delete(gson.toJson(post.id).toRequestBody(jsonType))
                 .build()
         } else {
             Request.Builder()
-                .url("${BASE_URL}/api/posts/${post.id}/likes")
+                .url("${BASE_URL}api/posts/${post.id}/likes")
                 .post(gson.toJson(post.id).toRequestBody(jsonType))
                 .build()
         }
@@ -98,7 +95,7 @@ class PostRepositoryImpl: PostRepository {
 
     override fun save(post: Post, callback: PostRepository.NMediaCallback<Post>) {
         val request = Request.Builder()
-            .url("${BASE_URL}/api/slow/posts")
+            .url("${BASE_URL}api/slow/posts")
             .post(gson.toJson(post).toRequestBody(jsonType))
             .build()
         client.newCall(request)
@@ -123,7 +120,7 @@ class PostRepositoryImpl: PostRepository {
     override fun removeById(id: Long, callback: PostRepository.NMediaCallback<Post>) {
         val request = Request.Builder()
             .delete()
-            .url("${BASE_URL}/api/slow/posts/$id")
+            .url("${BASE_URL}api/slow/posts/$id")
             .build()
 
         client.newCall(request)
