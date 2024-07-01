@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
 
 class PostRepositoryImpl: PostRepository {
     private val client = OkHttpClient.Builder()
-        .connectTimeout(1, TimeUnit.SECONDS)
+        .connectTimeout(30, TimeUnit.SECONDS)
         .build()
     private val gson = Gson()
     private val type = object : TypeToken<List<Post>>() {}.type
@@ -42,20 +42,17 @@ class PostRepositoryImpl: PostRepository {
         client.newCall(request)
             .enqueue(object : Callback {
 
-                override fun onFailure(call: okhttp3.Call, e: IOException) {
+                override fun onFailure(call: Call, e: IOException) {
                     callback.onError(e)
                 }
 
-                override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
-                    val body = response.body?.string() ?: throw RuntimeException("body is null")
-                    try {
-                        callback.onSuccess(gson.fromJson(response.body?.string(), type))
-                    } catch (e: Exception) {
-                        callback.onError(e)
-                    }
+                override fun onResponse(call: Call, response: Response) = try {
+                    callback.onSuccess(gson.fromJson(response.body?.string(), type))
+                } catch (e: Exception) {
+                    callback.onError(e)
                 }
-
             })
+
 
 
     }

@@ -60,7 +60,7 @@ class PostViewHolder(
             .load("${PostRepositoryImpl.BASE_URL}avatars/${post.authorAvatar}")
             .placeholder(R.drawable.ic_loading_100dp)
             .error(R.drawable.baseline_error_24)
-            .timeout(10_000)
+            .timeout(30_000)
             .apply(RequestOptions.bitmapTransform(RoundedCorners(100)))
             .into(avatar)
 
