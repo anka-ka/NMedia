@@ -104,8 +104,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
 
     fun removeById(id: Long) {
-        repository.removeById(id, object : PostRepository.NMediaCallback<Post> {
-            override fun onSuccess(data: Post) {
+        repository.removeById(id, object : PostRepository.NMediaCallback<Unit> {
+            override fun onSuccess(data: Unit) {
                 _data.postValue(
                     _data.value?.copy
                         (posts = _data.value?.posts.orEmpty().filter {
