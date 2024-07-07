@@ -4,19 +4,19 @@ import ApiService
 
 import retrofit2.Call
 import retrofit2.Callback
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Response
+import ru.netology.nmedia.R
 import ru.netology.nmedia.datatransferobjects.Post
-import java.io.IOException
+import android.content.Context
 
-class PostRepositoryImpl: PostRepository {
+class PostRepositoryImpl(private val context: Context): PostRepository {
 
 
     override fun getAll(): List<Post> {
         return ApiService.service.getAll()
             .execute()
-            .let { it.body() ?: throw RuntimeException("body is null") }
+            .let { it.body() ?: throw RuntimeException(context.getString(
+                R.string.post_error)) }
 
     }
     override fun getAllAsync(callback: PostRepository.NMediaCallback<List<Post>>) {
@@ -25,11 +25,13 @@ class PostRepositoryImpl: PostRepository {
             .enqueue(object : Callback<List<Post>> {
                 override fun onResponse(call: Call<List<Post>>, response: Response<List<Post>>) {
                     if (!response.isSuccessful) {
-                        callback.onError(RuntimeException(response.message()))
+                        callback.onError(RuntimeException(context.getString(
+                            R.string.post_error)))
                         return
                     }
 
-                    val body: List<Post> = response.body() ?: throw RuntimeException("body is null")
+                    val body: List<Post> = response.body() ?: throw RuntimeException(context.getString(
+                        R.string.post_error))
                     try {
                         callback.onSuccess(body)
                     } catch (e: Exception) {
@@ -53,10 +55,12 @@ class PostRepositoryImpl: PostRepository {
                 .enqueue(object : Callback<Post> {
                     override fun onResponse(call: Call<Post>, response: Response<Post>) {
                         if (!response.isSuccessful) {
-                            callback.onError(RuntimeException(response.message()))
+                            callback.onError(RuntimeException(context.getString(
+                                R.string.post_error)))
                             return
                         }
-                        val body: Post = response.body() ?: throw RuntimeException("body is null")
+                        val body: Post = response.body() ?: throw RuntimeException(context.getString(
+                            R.string.post_error))
 
                         try {
                             callback.onSuccess(body)
@@ -74,10 +78,12 @@ class PostRepositoryImpl: PostRepository {
                 .enqueue(object : Callback<Post> {
                     override fun onResponse(call: Call<Post>, response: Response<Post>) {
                         if (!response.isSuccessful) {
-                            callback.onError(RuntimeException(response.message()))
+                            callback.onError(RuntimeException(context.getString(
+                                R.string.post_error)))
                             return
                         }
-                        val body: Post = response.body() ?: throw RuntimeException("body is null")
+                        val body: Post = response.body() ?:  throw RuntimeException(context.getString(
+                            R.string.post_error))
                         try {
                             callback.onSuccess(body)
                         } catch (e: Exception) {
@@ -107,11 +113,13 @@ class PostRepositoryImpl: PostRepository {
 
                     override fun onResponse(call: Call<Post>, response: Response<Post>) {
                         if (!response.isSuccessful) {
-                            callback.onError(RuntimeException(response.message()))
+                            callback.onError(RuntimeException(context.getString(
+                                R.string.post_error)))
                             return
                         }
                         val body: Post = response.body()
-                            ?: throw RuntimeException("body is null")
+                            ?:  throw RuntimeException(context.getString(
+                                R.string.post_error))
                         try {
                             callback.onSuccess(body)
                         } catch (e: Exception) {
@@ -131,7 +139,8 @@ class PostRepositoryImpl: PostRepository {
 
                     override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
                         if (!response.isSuccessful) {
-                            callback.onError(RuntimeException(response.message()))
+                            callback.onError(RuntimeException(context.getString(
+                                R.string.post_error)))
                             return
                         }
                         try {

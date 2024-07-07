@@ -27,7 +27,7 @@ private val okhttp = OkHttpClient.Builder()
     .build()
 
 private val client = OkHttpClient.Builder()
-    .connectTimeout(30,TimeUnit.SECONDS)
+    .connectTimeout(10,TimeUnit.SECONDS)
     .build()
 
 private val retrofit = Retrofit.Builder()

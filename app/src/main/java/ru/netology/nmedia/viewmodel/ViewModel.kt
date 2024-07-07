@@ -24,7 +24,7 @@ private val empty = Post(
 
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository: PostRepository = PostRepositoryImpl()
+    private val repository: PostRepository = PostRepositoryImpl(application)
     private val _data = MutableLiveData(FeedModel())
     val data: LiveData<FeedModel>
         get() = _data
@@ -32,6 +32,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val _postCreated = SingleLiveEvent<Unit>()
     val postCreated: LiveData<Unit>
         get() = _postCreated
+    private val _postError = SingleLiveEvent<String>()
+    val postError: LiveData<String>
+        get() = _postError
 
     init {
         loadPosts()
@@ -45,10 +48,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             override fun onError(e: Exception) {
+                postError(e.message)
                 _data.postValue(FeedModel(error = true))
             }
         })
     }
+
     fun save() {
         edited.value?.let { post ->
             repository.save(post, object : PostRepository.NMediaCallback<Post> {
@@ -57,7 +62,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 }
 
                 override fun onError(e: Exception) {
-                    edited.postValue(empty)
+                    postError(e.message)
                 }
             })
         }
@@ -68,6 +73,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun edit(post: Post) {
         edited.value = post
     }
+
     fun onCloseEditClicked() {
         edited.value = empty
 
@@ -80,6 +86,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         }
         edited.value = edited.value?.copy(content = text)
     }
+
     fun likeById(post: Post) {
         repository.likeById(post, object : PostRepository.NMediaCallback<Post> {
             override fun onSuccess(data: Post) {
@@ -96,7 +103,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             override fun onError(e: java.lang.Exception) {
-                _data.postValue(FeedModel(error = true))
+                postError(e.message)
             }
 
         })
@@ -115,10 +122,16 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             override fun onError(e: Exception) {
-                _data.value
+                postError(e.message)
             }
         }
         )
         loadPosts()
+    }
+
+    private fun postError(error: String?) {
+        error.let {
+            _postError.postValue(it)
+        }
     }
 }
