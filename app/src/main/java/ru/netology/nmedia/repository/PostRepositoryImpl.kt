@@ -24,15 +24,24 @@ class PostRepositoryImpl(private val context: Context): PostRepository {
             .getAll()
             .enqueue(object : Callback<List<Post>> {
                 override fun onResponse(call: Call<List<Post>>, response: Response<List<Post>>) {
-                    if (!response.isSuccessful) {
-                        callback.onError(RuntimeException(context.getString(
-                            R.string.post_error)))
-                        return
-                    }
-
-                    val body: List<Post> = response.body() ?: throw RuntimeException(context.getString(
-                        R.string.post_error))
                     try {
+                        if (!response.isSuccessful) {
+                            callback.onError(
+                                RuntimeException(
+                                    context.getString(
+                                        R.string.post_error
+                                    )
+                                )
+                            )
+                            return
+                        }
+
+                        val body: List<Post> = response.body() ?: throw RuntimeException(
+                            context.getString(
+                                R.string.post_error
+                            )
+                        )
+
                         callback.onSuccess(body)
                     } catch (e: Exception) {
                         callback.onError(e)
@@ -54,6 +63,7 @@ class PostRepositoryImpl(private val context: Context): PostRepository {
             ApiService.service.dislikeById(post.id)
                 .enqueue(object : Callback<Post> {
                     override fun onResponse(call: Call<Post>, response: Response<Post>) {
+                        try {
                         if (!response.isSuccessful) {
                             callback.onError(RuntimeException(context.getString(
                                 R.string.post_error)))
@@ -62,7 +72,6 @@ class PostRepositoryImpl(private val context: Context): PostRepository {
                         val body: Post = response.body() ?: throw RuntimeException(context.getString(
                             R.string.post_error))
 
-                        try {
                             callback.onSuccess(body)
                         } catch (e: Exception) {
                             callback.onError(e)
@@ -77,6 +86,7 @@ class PostRepositoryImpl(private val context: Context): PostRepository {
             ApiService.service.likeById(post.id)
                 .enqueue(object : Callback<Post> {
                     override fun onResponse(call: Call<Post>, response: Response<Post>) {
+                        try {
                         if (!response.isSuccessful) {
                             callback.onError(RuntimeException(context.getString(
                                 R.string.post_error)))
@@ -84,7 +94,7 @@ class PostRepositoryImpl(private val context: Context): PostRepository {
                         }
                         val body: Post = response.body() ?:  throw RuntimeException(context.getString(
                             R.string.post_error))
-                        try {
+
                             callback.onSuccess(body)
                         } catch (e: Exception) {
                             callback.onError(e)
@@ -112,6 +122,7 @@ class PostRepositoryImpl(private val context: Context): PostRepository {
                     }
 
                     override fun onResponse(call: Call<Post>, response: Response<Post>) {
+                        try {
                         if (!response.isSuccessful) {
                             callback.onError(RuntimeException(context.getString(
                                 R.string.post_error)))
@@ -120,7 +131,7 @@ class PostRepositoryImpl(private val context: Context): PostRepository {
                         val body: Post = response.body()
                             ?:  throw RuntimeException(context.getString(
                                 R.string.post_error))
-                        try {
+
                             callback.onSuccess(body)
                         } catch (e: Exception) {
                             callback.onError(e)
@@ -133,17 +144,18 @@ class PostRepositoryImpl(private val context: Context): PostRepository {
             ApiService.service.removeById(id)
             .enqueue(
                 object : Callback<Unit> {
+
                     override fun onFailure(call: Call<Unit>, t: Throwable) {
                         callback.onError(Exception(t))
                     }
 
                     override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
+                        try {
                         if (!response.isSuccessful) {
                             callback.onError(RuntimeException(context.getString(
                                 R.string.post_error)))
                             return
                         }
-                        try {
                             callback.onSuccess(Unit)
                         } catch (e: Exception) {
                             callback.onError(e)

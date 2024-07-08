@@ -93,7 +93,7 @@ class FeedFragment : Fragment() {
                 requireView(),
                 error,
                 Snackbar.LENGTH_LONG
-            ).show()
+            ).setAnchorView(binding.addNewPost).show()
         }
 
         binding.retry.setOnClickListener{
