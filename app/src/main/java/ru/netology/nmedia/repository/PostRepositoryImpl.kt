@@ -9,16 +9,22 @@ import ru.netology.nmedia.R
 import ru.netology.nmedia.datatransferobjects.Post
 import android.content.Context
 
-class PostRepositoryImpl(private val context: Context): PostRepository {
+class PostRepositoryImpl(private val context: Context) : PostRepository {
 
 
     override fun getAll(): List<Post> {
         return ApiService.service.getAll()
             .execute()
-            .let { it.body() ?: throw RuntimeException(context.getString(
-                R.string.post_error)) }
+            .let {
+                it.body() ?: throw RuntimeException(
+                    context.getString(
+                        R.string.post_error
+                    )
+                )
+            }
 
     }
+
     override fun getAllAsync(callback: PostRepository.NMediaCallback<List<Post>>) {
         ApiService.service
             .getAll()
@@ -64,13 +70,21 @@ class PostRepositoryImpl(private val context: Context): PostRepository {
                 .enqueue(object : Callback<Post> {
                     override fun onResponse(call: Call<Post>, response: Response<Post>) {
                         try {
-                        if (!response.isSuccessful) {
-                            callback.onError(RuntimeException(context.getString(
-                                R.string.post_error)))
-                            return
-                        }
-                        val body: Post = response.body() ?: throw RuntimeException(context.getString(
-                            R.string.post_error))
+                            if (!response.isSuccessful) {
+                                callback.onError(
+                                    RuntimeException(
+                                        context.getString(
+                                            R.string.post_error
+                                        )
+                                    )
+                                )
+                                return
+                            }
+                            val body: Post = response.body() ?: throw RuntimeException(
+                                context.getString(
+                                    R.string.post_error
+                                )
+                            )
 
                             callback.onSuccess(body)
                         } catch (e: Exception) {
@@ -87,13 +101,21 @@ class PostRepositoryImpl(private val context: Context): PostRepository {
                 .enqueue(object : Callback<Post> {
                     override fun onResponse(call: Call<Post>, response: Response<Post>) {
                         try {
-                        if (!response.isSuccessful) {
-                            callback.onError(RuntimeException(context.getString(
-                                R.string.post_error)))
-                            return
-                        }
-                        val body: Post = response.body() ?:  throw RuntimeException(context.getString(
-                            R.string.post_error))
+                            if (!response.isSuccessful) {
+                                callback.onError(
+                                    RuntimeException(
+                                        context.getString(
+                                            R.string.post_error
+                                        )
+                                    )
+                                )
+                                return
+                            }
+                            val body: Post = response.body() ?: throw RuntimeException(
+                                context.getString(
+                                    R.string.post_error
+                                )
+                            )
 
                             callback.onSuccess(body)
                         } catch (e: Exception) {
@@ -123,14 +145,22 @@ class PostRepositoryImpl(private val context: Context): PostRepository {
 
                     override fun onResponse(call: Call<Post>, response: Response<Post>) {
                         try {
-                        if (!response.isSuccessful) {
-                            callback.onError(RuntimeException(context.getString(
-                                R.string.post_error)))
-                            return
-                        }
-                        val body: Post = response.body()
-                            ?:  throw RuntimeException(context.getString(
-                                R.string.post_error))
+                            if (!response.isSuccessful) {
+                                callback.onError(
+                                    RuntimeException(
+                                        context.getString(
+                                            R.string.post_error
+                                        )
+                                    )
+                                )
+                                return
+                            }
+                            val body: Post = response.body()
+                                ?: throw RuntimeException(
+                                    context.getString(
+                                        R.string.post_error
+                                    )
+                                )
 
                             callback.onSuccess(body)
                         } catch (e: Exception) {
@@ -141,7 +171,7 @@ class PostRepositoryImpl(private val context: Context): PostRepository {
     }
 
     override fun removeById(id: Long, callback: PostRepository.NMediaCallback<Unit>) {
-            ApiService.service.removeById(id)
+        ApiService.service.removeById(id)
             .enqueue(
                 object : Callback<Unit> {
 
@@ -151,11 +181,16 @@ class PostRepositoryImpl(private val context: Context): PostRepository {
 
                     override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
                         try {
-                        if (!response.isSuccessful) {
-                            callback.onError(RuntimeException(context.getString(
-                                R.string.post_error)))
-                            return
-                        }
+                            if (!response.isSuccessful) {
+                                callback.onError(
+                                    RuntimeException(
+                                        context.getString(
+                                            R.string.post_error
+                                        )
+                                    )
+                                )
+                                return
+                            }
                             callback.onSuccess(Unit)
                         } catch (e: Exception) {
                             callback.onError(e)
