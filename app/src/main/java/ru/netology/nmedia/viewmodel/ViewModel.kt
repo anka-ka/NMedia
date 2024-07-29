@@ -5,10 +5,17 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import ru.netology.nmedia.datatransferobjects.Post
+import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.util.SingleLiveEvent
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
+import android.content.Context
+import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
+import com.github.javafaker.Faker
+import kotlinx.coroutines.launch
+import ru.netology.nmedia.model.FeedModelState
 
 private val empty = Post(
     id = 0,
@@ -17,58 +24,76 @@ private val empty = Post(
     published = "",
     likedByMe = false,
     likes = 0,
-    shares = 0,
-    shared = false
+    shares = 0
 )
 
 
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository: PostRepository = PostRepositoryImpl(application)
-    private val _data = MutableLiveData(FeedModel())
-    val data: LiveData<FeedModel>
-        get() = _data
-    val edited = MutableLiveData(empty)
+
+    private val repository: PostRepository = with(AppDb.getInstance(context = application)) {
+        PostRepositoryImpl(postDao(), draftDao(), application)
+    }
+
+
+    private val _state = MutableLiveData<FeedModelState>()
+    val state: LiveData<FeedModelState>
+        get() = _state
+    val data: LiveData<FeedModel> = repository.data.map {
+        FeedModel(posts = it, empty = it.isEmpty())
+    }
     private val _postCreated = SingleLiveEvent<Unit>()
     val postCreated: LiveData<Unit>
         get() = _postCreated
+
     private val _postError = SingleLiveEvent<String>()
     val postError: LiveData<String>
         get() = _postError
+
 
     init {
         loadPosts()
     }
 
     fun loadPosts() {
-        _data.postValue(FeedModel(loading = true))
-        repository.getAllAsync(object : PostRepository.NMediaCallback<List<Post>> {
-            override fun onSuccess(data: List<Post>) {
-                _data.postValue(FeedModel(posts = data, empty = data.isEmpty()))
+        viewModelScope.launch {
+            _state.postValue(FeedModelState(loading = true))
+            _state.value = try {
+                repository.getAll()
+                FeedModelState()
+            } catch (e: Exception) {
+                FeedModelState(error = true)
             }
-
-            override fun onError(e: Exception) {
-                postError(e.message)
-                _data.postValue(FeedModel(error = true))
-            }
-        })
+        }
     }
+    fun refreshPosts() {
+        viewModelScope.launch {
+            _state.postValue(FeedModelState(refreshing = true))
+            _state.value = try {
+                repository.getAll()
+                FeedModelState()
+            } catch (e: Exception) {
+                FeedModelState(error = true)
+            }
+        }
+    }
+    val edited = MutableLiveData(empty)
 
-    fun save() {
-        edited.value?.let { post ->
-            repository.save(post, object : PostRepository.NMediaCallback<Post> {
-                override fun onSuccess(data: Post) {
+    fun changeContentAndSave(content: String) {
+
+        viewModelScope.launch {
+            val faker = Faker()
+            try {
+                edited.value?.let {
+                    repository.save(it.copy(content = content, author = faker.name().fullName()))
                     _postCreated.postValue(Unit)
                 }
-
-                override fun onError(e: Exception) {
-                    postError(e.message)
-                }
-            })
+                edited.value = empty
+            } catch (e: Exception) {
+                _postCreated.postValue(Unit)
+            }
         }
-        edited.postValue(empty)
     }
-
 
     fun edit(post: Post) {
         edited.value = post
@@ -79,57 +104,30 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     }
 
-    fun changeContent(content: String) {
-        val text = content.trim()
-        if (edited.value?.content == text) {
-            return
-        }
-        edited.value = edited.value?.copy(content = text)
-    }
 
-    fun likeById(post: Post) {
-        repository.likeById(post, object : PostRepository.NMediaCallback<Post> {
-            override fun onSuccess(data: Post) {
-                val model = _data.value ?: return
-                _data.postValue(
-                    model.copy(posts = model.posts.map {
-                        if (it.id == data.id) {
-                            data
-                        } else {
-                            it
-                        }
-                    })
-                )
-            }
-
-            override fun onError(e: java.lang.Exception) {
-                postError(e.message)
-            }
-
-        })
-    }
-
-
-    fun removeById(id: Long) {
-        repository.removeById(id, object : PostRepository.NMediaCallback<Unit> {
-            override fun onSuccess(data: Unit) {
-                _data.postValue(
-                    _data.value?.copy
-                        (posts = _data.value?.posts.orEmpty().filter {
-                        it.id != id
-                    })
-                )
-            }
-
-            override fun onError(e: Exception) {
-                postError(e.message)
+    fun likeById(id: Long) {
+        viewModelScope.launch {
+            try {
+                repository.likeById(id)
+            } catch (e: Exception) {
+                FeedModelState(error = true)
             }
         }
-        )
-        loadPosts()
     }
 
-    private fun postError(error: String?) {
+
+        fun removeById(id: Long) {
+            viewModelScope.launch {
+                try {
+                    repository.removeById(id)
+                    FeedModelState()
+                } catch (e: Exception) {
+                    FeedModelState(error = true)
+                }
+            }
+        }
+
+     fun postError(error: String?) {
         error.let {
             _postError.postValue(it)
         }
