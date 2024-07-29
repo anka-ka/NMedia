@@ -23,6 +23,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
     buildTypes {
@@ -33,9 +34,11 @@ android {
                 "proguard-rules.pro"
             )
             manifestPlaceholders["usesCleartextTraffic"] = false
+            buildConfigField("String", "BASE_URL", "\"https://netology.ru/\"")
         }
         debug {
             manifestPlaceholders["usesCleartextTraffic"] = true
+            buildConfigField ("String", "BASE_URL", "\"http://10.0.2.2:9999/\"")
         }
     }
     compileOptions {
@@ -73,6 +76,9 @@ dependencies {
     implementation("com.google.firebase:firebase-vertexai:16.0.0-beta01")
     implementation ("com.github.bumptech.glide:glide:5.0.0-rc01")
     kapt ("androidx.room:room-compiler:2.6.1")
+    implementation ("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation ("com.squareup.okhttp3:logging-interceptor:4.12.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")

@@ -1,4 +1,5 @@
 package ru.netology.nmedia.adapter
+import BASE_URL
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
+import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.datatransferobjects.Post
@@ -57,7 +59,7 @@ class PostViewHolder(
         likes.text = cutLongNumbers(post.likes)
 
         Glide.with(binding.root)
-            .load("${PostRepositoryImpl.BASE_URL}avatars/${post.authorAvatar}")
+            .load("${BuildConfig.BASE_URL}avatars/${post.authorAvatar}")
             .placeholder(R.drawable.ic_loading_100dp)
             .error(R.drawable.baseline_error_24)
             .timeout(30_000)

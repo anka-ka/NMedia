@@ -1,91 +1,133 @@
 package ru.netology.nmedia.repository
 
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
+import ApiService
+
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import ru.netology.nmedia.R
 import ru.netology.nmedia.datatransferobjects.Post
-import java.io.IOException
-import java.util.concurrent.TimeUnit
+import android.content.Context
 
-class PostRepositoryImpl: PostRepository {
-    private val client = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .build()
-    private val gson = Gson()
-    private val type = object : TypeToken<List<Post>>() {}.type
+class PostRepositoryImpl(private val context: Context) : PostRepository {
 
-    companion object {
-        const val BASE_URL = "http://10.0.2.2:9999/"
-        private val jsonType = "application/json".toMediaType()
-    }
 
     override fun getAll(): List<Post> {
-        val request = Request.Builder()
-            .url("${BASE_URL}api/slow/posts")
-            .build()
-        val response = client.newCall(request)
+        return ApiService.service.getAll()
             .execute()
-        val responseText = response.body?.string() ?: error("Response body is null")
-        return gson.fromJson(responseText, type)
+            .let {
+                it.body() ?: throw RuntimeException(
+                    context.getString(
+                        R.string.post_error
+                    )
+                )
+            }
+
     }
+
     override fun getAllAsync(callback: PostRepository.NMediaCallback<List<Post>>) {
-        val request = Request.Builder()
-            .url("${BASE_URL}api/slow/posts")
-            .build()
-
-        client.newCall(request)
-            .enqueue(object : Callback {
-
-                override fun onFailure(call: Call, e: IOException) {
-                    callback.onError(e)
-                }
-
-                override fun onResponse(call: Call, response: Response) = try {
-                    callback.onSuccess(gson.fromJson(response.body?.string(), type))
-                } catch (e: Exception) {
-                    callback.onError(e)
-                }
-            })
-
-
-
-    }
-
-    override fun likeById(post: Post, callback: PostRepository.NMediaCallback<Post>) {
-        val request = if (post.likedByMe) {
-            Request.Builder()
-                .url("${BASE_URL}api/posts/${post.id}/likes")
-                .delete(gson.toJson(post.id).toRequestBody(jsonType))
-                .build()
-        } else {
-            Request.Builder()
-                .url("${BASE_URL}api/posts/${post.id}/likes")
-                .post(gson.toJson(post.id).toRequestBody(jsonType))
-                .build()
-        }
-        client.newCall(request)
-            .enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    callback.onError(e)
-                }
-
-                override fun onResponse(call: Call, response: Response) {
+        ApiService.service
+            .getAll()
+            .enqueue(object : Callback<List<Post>> {
+                override fun onResponse(call: Call<List<Post>>, response: Response<List<Post>>) {
                     try {
-                        val responseText = response.body?.string()
-                        callback.onSuccess(gson.fromJson(responseText, Post::class.java))
+                        if (!response.isSuccessful) {
+                            callback.onError(
+                                RuntimeException(
+                                    context.getString(
+                                        R.string.post_error
+                                    )
+                                )
+                            )
+                            return
+                        }
+
+                        val body: List<Post> = response.body() ?: throw RuntimeException(
+                            context.getString(
+                                R.string.post_error
+                            )
+                        )
+
+                        callback.onSuccess(body)
                     } catch (e: Exception) {
                         callback.onError(e)
                     }
-
                 }
 
+                override fun onFailure(call: Call<List<Post>>, t: Throwable) {
+                    callback.onError(Exception(t))
+
+                }
             })
+    }
+
+    override fun likeById(
+        post: Post,
+        callback: PostRepository.NMediaCallback<Post>
+    ) {
+        if (post.likedByMe) {
+            ApiService.service.dislikeById(post.id)
+                .enqueue(object : Callback<Post> {
+                    override fun onResponse(call: Call<Post>, response: Response<Post>) {
+                        try {
+                            if (!response.isSuccessful) {
+                                callback.onError(
+                                    RuntimeException(
+                                        context.getString(
+                                            R.string.post_error
+                                        )
+                                    )
+                                )
+                                return
+                            }
+                            val body: Post = response.body() ?: throw RuntimeException(
+                                context.getString(
+                                    R.string.post_error
+                                )
+                            )
+
+                            callback.onSuccess(body)
+                        } catch (e: Exception) {
+                            callback.onError(e)
+                        }
+                    }
+
+                    override fun onFailure(call: Call<Post>, t: Throwable) {
+                        callback.onError(Exception(t))
+                    }
+                })
+        } else {
+            ApiService.service.likeById(post.id)
+                .enqueue(object : Callback<Post> {
+                    override fun onResponse(call: Call<Post>, response: Response<Post>) {
+                        try {
+                            if (!response.isSuccessful) {
+                                callback.onError(
+                                    RuntimeException(
+                                        context.getString(
+                                            R.string.post_error
+                                        )
+                                    )
+                                )
+                                return
+                            }
+                            val body: Post = response.body() ?: throw RuntimeException(
+                                context.getString(
+                                    R.string.post_error
+                                )
+                            )
+
+                            callback.onSuccess(body)
+                        } catch (e: Exception) {
+                            callback.onError(e)
+                        }
+                    }
+
+                    override fun onFailure(call: Call<Post>, t: Throwable) {
+                        callback.onError(Exception(t))
+                    }
+                })
+        }
     }
 
 
@@ -94,46 +136,62 @@ class PostRepositoryImpl: PostRepository {
     }
 
     override fun save(post: Post, callback: PostRepository.NMediaCallback<Post>) {
-        val request = Request.Builder()
-            .url("${BASE_URL}api/slow/posts")
-            .post(gson.toJson(post).toRequestBody(jsonType))
-            .build()
-        client.newCall(request)
+        ApiService.service.save(post)
             .enqueue(
-                object : Callback {
-                    override fun onFailure(call: Call, e: IOException) {
-                        callback.onError(e)
+                object : Callback<Post> {
+                    override fun onFailure(call: Call<Post>, t: Throwable) {
+                        callback.onError(Exception(t))
                     }
 
-                    override fun onResponse(call: Call, response: Response) {
-                        val responseBody = response.body?.string()
+                    override fun onResponse(call: Call<Post>, response: Response<Post>) {
                         try {
-                            callback.onSuccess(gson.fromJson(responseBody, type))
+                            if (!response.isSuccessful) {
+                                callback.onError(
+                                    RuntimeException(
+                                        context.getString(
+                                            R.string.post_error
+                                        )
+                                    )
+                                )
+                                return
+                            }
+                            val body: Post = response.body()
+                                ?: throw RuntimeException(
+                                    context.getString(
+                                        R.string.post_error
+                                    )
+                                )
+
+                            callback.onSuccess(body)
                         } catch (e: Exception) {
                             callback.onError(e)
                         }
                     }
-                }
-            )
+                })
     }
 
-    override fun removeById(id: Long, callback: PostRepository.NMediaCallback<Post>) {
-        val request = Request.Builder()
-            .delete()
-            .url("${BASE_URL}api/slow/posts/$id")
-            .build()
-
-        client.newCall(request)
+    override fun removeById(id: Long, callback: PostRepository.NMediaCallback<Unit>) {
+        ApiService.service.removeById(id)
             .enqueue(
-                object : Callback {
-                    override fun onFailure(call: Call, e: IOException) {
-                        callback.onError(e)
+                object : Callback<Unit> {
+
+                    override fun onFailure(call: Call<Unit>, t: Throwable) {
+                        callback.onError(Exception(t))
                     }
 
-                    override fun onResponse(call: Call, response: Response) {
-                        val responseBody = response.body?.string()
+                    override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
                         try {
-                            callback.onSuccess(gson.fromJson(responseBody, type))
+                            if (!response.isSuccessful) {
+                                callback.onError(
+                                    RuntimeException(
+                                        context.getString(
+                                            R.string.post_error
+                                        )
+                                    )
+                                )
+                                return
+                            }
+                            callback.onSuccess(Unit)
                         } catch (e: Exception) {
                             callback.onError(e)
                         }
