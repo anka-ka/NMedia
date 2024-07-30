@@ -32,7 +32,7 @@ private val empty = Post(
 class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository: PostRepository = with(AppDb.getInstance(context = application)) {
-        PostRepositoryImpl(postDao(), draftDao(), application)
+        PostRepositoryImpl(postDao(), application)
     }
 
 

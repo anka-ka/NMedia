@@ -43,7 +43,6 @@ class NewPostFragment : Fragment() {
         }
         viewModel.postCreated.observe(viewLifecycleOwner) {
             findNavController().navigateUp()
-            viewModel.loadPosts()
         }
 
         binding.close.setOnClickListener {

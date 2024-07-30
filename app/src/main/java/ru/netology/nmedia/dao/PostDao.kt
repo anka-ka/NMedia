@@ -3,6 +3,7 @@
 package ru.netology.nmedia.dao
 
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -16,7 +17,7 @@ import ru.netology.nmedia.util.getTime
 interface PostDao {
 
     @Query("SELECT * FROM PostEntity ORDER BY id DESC")
-    fun getAll(): Flow<List<PostEntity>>
+    fun getAll(): LiveData<List<PostEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(post: PostEntity)
@@ -49,12 +50,18 @@ interface PostDao {
     @Query("DELETE FROM PostEntity WHERE id = :id")
     suspend fun removeById(id: Long)
 
+    @Query("SELECT * FROM PostEntity WHERE id = :id")
+    suspend fun getById(id: Long): PostEntity?
+
+
     @Query(
         """
-        UPDATE PostEntity SET
-        shares = shares + 1
-        WHERE id = :id
-        """
+    UPDATE PostEntity SET
+        shares = shares + 1,
+        likes = likes + CASE WHEN likedByMe = 1 THEN -1 ELSE 1 END,
+        likedByMe = CASE WHEN likedByMe = 1 THEN 0 ELSE 1 END
+    WHERE id = :id
+    """
     )
     suspend fun sharedById(id: Long)
 

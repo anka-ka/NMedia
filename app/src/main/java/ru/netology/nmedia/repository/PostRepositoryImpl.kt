@@ -2,13 +2,13 @@ package ru.netology.nmedia.repository
 
 import ApiService
 import android.content.Context
-import androidx.lifecycle.asLiveData
-import kotlinx.coroutines.flow.combine
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import ru.netology.nmedia.R
-import ru.netology.nmedia.dao.DraftDao
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.datatransferobjects.Post
-import ru.netology.nmedia.entity.DraftEntity
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.error.ApiError
 import ru.netology.nmedia.error.AppUnknownError
@@ -17,14 +17,11 @@ import java.io.IOException
 
 class PostRepositoryImpl(
     private val postDao: PostDao,
-    private val draftDao: DraftDao,
     private val context: Context
 ) : PostRepository {
-    override val data = draftDao.getAll()
-        .combine(postDao.getAll()) { drafts, posts ->
-            drafts.map { it.toDto() } + posts.map { it.toDto() }
-        }
-        .asLiveData()
+    override val data: LiveData<List<Post>> = postDao.getAll().map{
+        it.map(PostEntity::toDto)
+    }
 
 
     override suspend fun getAll() {
@@ -44,36 +41,35 @@ class PostRepositoryImpl(
         postDao.insert(posts.map(PostEntity::fromDto))
     }
 
-    override suspend fun likeById(id: Long) {
-        val entity = postDao.likeById(id)
-        val updated = entity.copy(
-            likedByMe = !entity.likedByMe,
-            likes = if (entity.likedByMe) entity.likes - 1 else entity.likes + 1
-        )
-        postDao.insert(updated)
-        try {
-            val response = if (entity.likedByMe) {
+override suspend fun likeById(id: Long) {
+
+    val postEntity = postDao.likeById(id)
+    val post = postEntity.toDto()
+
+    try {
+        val response = withContext(Dispatchers.IO) {
+            if (post.likedByMe) {
                 ApiService.service.dislikeById(id)
             } else {
                 ApiService.service.likeById(id)
             }
-            if (!response.isSuccessful) {
-                throw RuntimeException(context.getString(
-                    R.string.post_error
-                ))
-            }
-            val body = response.body() ?: throw RuntimeException(context.getString(
-                R.string.response_error
-            ))
-            postDao.insert(PostEntity.fromDto(body))
-        } catch (e: IOException) {
-            postDao.insert(entity)
-            throw NetworkError
-        } catch (e: Exception) {
-            postDao.insert(entity)
-            throw AppUnknownError
         }
+
+        if (!response.isSuccessful) {
+            throw RuntimeException(context.getString(R.string.post_error))
+        }
+
+        val updatedPost = response.body() ?: throw RuntimeException(context.getString(R.string.response_error))
+
+        postDao.insert(PostEntity.fromDto(updatedPost))
+    } catch (e: IOException) {
+        postDao.insert(postEntity)
+        throw NetworkError
+    } catch (e: Exception) {
+        postDao.insert(postEntity)
+        throw AppUnknownError
     }
+}
 
 
     override suspend fun shareById(id: Long) {
@@ -82,17 +78,12 @@ class PostRepositoryImpl(
 
     override suspend fun save(post: Post) {
         try {
-            val id = draftDao.insert(DraftEntity(content = post.content))
             val response = ApiService.service.save(post)
             if (!response.isSuccessful) {
-                throw RuntimeException(context.getString(
-                    R.string.post_error
-                ))
+                throw ApiError(response.code(), response.message())
             }
-            val body = response.body() ?: throw RuntimeException(context.getString(
-                R.string.response_error
-            ))
-            draftDao.removeById(id)
+
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
             postDao.insert(PostEntity.fromDto(body))
         } catch (e: IOException) {
             throw NetworkError
@@ -101,17 +92,28 @@ class PostRepositoryImpl(
         }
     }
 
-    override suspend fun removeById(id: Long) {
-        postDao.removeById(id)
-        try {
-            val response = ApiService.service.removeById(id)
-            if (!response.isSuccessful) {
-                throw ApiError(response.code(), context.getString(R.string.post_error))
+override suspend fun removeById(id: Long) {
+    val postEntity = postDao.getById(id)
+    postDao.removeById(id)
+
+    try {
+        val response = ApiService.service.removeById(id)
+        if (!response.isSuccessful) {
+            if (postEntity != null) {
+                postDao.insert(postEntity)
             }
-        } catch (e: IOException) {
-            throw NetworkError
-        } catch (e: Exception) {
-            throw AppUnknownError
+            throw ApiError(response.code(), context.getString(R.string.post_error))
         }
+    } catch (e: IOException) {
+        if (postEntity != null) {
+            postDao.insert(postEntity)
+        }
+        throw NetworkError
+    } catch (e: Exception) {
+        if (postEntity != null) {
+            postDao.insert(postEntity)
+        }
+        throw AppUnknownError
     }
+}
 }
