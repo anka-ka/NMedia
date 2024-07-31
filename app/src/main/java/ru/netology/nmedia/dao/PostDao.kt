@@ -44,8 +44,15 @@ interface PostDao {
             )
         }
 
-    @Query("SELECT * FROM PostEntity WHERE id = :id")
-    suspend fun likeById(id: Long): PostEntity
+    @Query(
+        """
+    UPDATE PostEntity SET
+        likes = likes + CASE WHEN likedByMe = 1 THEN -1 ELSE 1 END,
+        likedByMe = CASE WHEN likedByMe = 1 THEN 0 ELSE 1 END
+    WHERE id = :id
+    """
+    )
+    suspend fun likeById(id: Long)
 
     @Query("DELETE FROM PostEntity WHERE id = :id")
     suspend fun removeById(id: Long)
@@ -57,12 +64,9 @@ interface PostDao {
     @Query(
         """
     UPDATE PostEntity SET
-        shares = shares + 1,
-        likes = likes + CASE WHEN likedByMe = 1 THEN -1 ELSE 1 END,
-        likedByMe = CASE WHEN likedByMe = 1 THEN 0 ELSE 1 END
+        shares = shares + 1
     WHERE id = :id
     """
     )
     suspend fun sharedById(id: Long)
-
 }

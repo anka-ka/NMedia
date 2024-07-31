@@ -43,8 +43,8 @@ class PostRepositoryImpl(
 
 override suspend fun likeById(id: Long) {
 
-    val postEntity = postDao.likeById(id)
-    val post = postEntity.toDto()
+    val post = postDao.getById(id)?: return
+    postDao.likeById(id)
 
     try {
         val response = withContext(Dispatchers.IO) {
@@ -56,6 +56,7 @@ override suspend fun likeById(id: Long) {
         }
 
         if (!response.isSuccessful) {
+            postDao.likeById(id)
             throw RuntimeException(context.getString(R.string.post_error))
         }
 
@@ -63,10 +64,10 @@ override suspend fun likeById(id: Long) {
 
         postDao.insert(PostEntity.fromDto(updatedPost))
     } catch (e: IOException) {
-        postDao.insert(postEntity)
+        postDao.likeById(id)
         throw NetworkError
     } catch (e: Exception) {
-        postDao.insert(postEntity)
+        postDao.likeById(id)
         throw AppUnknownError
     }
 }
