@@ -47,7 +47,7 @@ class FeedFragment : Fragment() {
             }
 
             override fun onLike(post: Post) {
-                viewModel.likeById(post)
+                viewModel.likeById(post.id)
             }
 
             override fun onShare(post: Post) {
@@ -78,27 +78,44 @@ class FeedFragment : Fragment() {
                     })
             }
         })
-
+        binding.refresh.setOnRefreshListener {
+            viewModel.refreshPosts()
+        }
         binding.list.adapter = adapter
 
-        viewModel.data.observe(viewLifecycleOwner){ model ->
-            binding.errorGroup.isVisible = model.error
-            binding.emptyState.isVisible = model.empty
-            binding.progress.isVisible = model.loading
-            adapter.submitList(model.posts)
-
+        viewModel.data.observe(viewLifecycleOwner) { state ->
+            val newPost = state.posts.size > adapter.currentList.size
+            binding.emptyState.isVisible = state.empty
+            adapter.submitList(state.posts) {
+                if (newPost) {
+                    binding.list.smoothScrollToPosition(0)
+                }
+            }
+        }
+        viewModel.state.observe(viewLifecycleOwner) { state ->
+            if (state.error) {
+                Snackbar.make(
+                    binding.root,
+                    R.string.error_loading,
+                    Snackbar.LENGTH_SHORT)
+                    .setAction(R.string.retry_loading) {
+                        viewModel.loadPosts()
+                    }
+                    .show()
+            }
+            binding.progress.isVisible = state.loading
+            binding.refresh.isRefreshing = state.refreshing
         }
         viewModel.postError.observe(viewLifecycleOwner) { error ->
             Snackbar.make(
                 requireView(),
                 error,
                 Snackbar.LENGTH_LONG
-            ).setAnchorView(binding.addNewPost).show()
+            ).setAction(R.string.retry_loading) {
+                viewModel.loadPosts()
+            }.show()
         }
 
-        binding.retry.setOnClickListener{
-            viewModel.loadPosts()
-        }
         binding.addNewPost.setOnClickListener {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
        }

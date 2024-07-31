@@ -55,7 +55,7 @@ class OnePostFragment : Fragment() {
                 }
 
                 override fun onLike(post: Post) {
-                    viewModel.likeById(post)
+                    viewModel.likeById(post.id)
                 }
 
                 override fun onShare(post: Post) {
