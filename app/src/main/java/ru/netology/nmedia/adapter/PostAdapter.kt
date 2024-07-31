@@ -53,7 +53,6 @@ class PostViewHolder(
         author.text = post.author
         published.text = post.published
         content.text = post.content
-        shares.isChecked = post.shared
         shares.text = cutLongNumbers(post.shares)
         likes.isChecked = post.likedByMe
         likes.text = cutLongNumbers(post.likes)
