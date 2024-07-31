@@ -29,7 +29,7 @@ class PostRepositoryImpl(
     private val postDao: PostDao,
     private val context: Context
 ) : PostRepository {
-    override val data: Flow<List<Post>> = postDao.getAll().map{
+    override val data: Flow<List<Post>> = postDao.getAllVisible().map{
         it.map(PostEntity::toDto)
     }
 
@@ -95,7 +95,7 @@ override suspend fun likeById(id: Long) {
             }
 
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-            postDao.insert(body.toEntity(hidden = true))
+            postDao.insert(body.toEntity(hidden = false))
             emit(body.size)
         }
     }

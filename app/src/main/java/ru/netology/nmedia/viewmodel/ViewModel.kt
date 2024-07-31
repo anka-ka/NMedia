@@ -94,7 +94,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _state.postValue(FeedModelState(refreshing = true))
             _state.value = try {
-                repository.getAll()
+                repository.getAllVisible()
                 FeedModelState()
             } catch (e: Exception) {
                 FeedModelState(error = true)
@@ -156,7 +156,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             _postError.postValue(it)
         }
     }
-
     private suspend fun checkForNewPosts() {
         val lastKnownPostId = repository.getLastPostId()
         val newPostsCount = lastKnownPostId?.let { repository.getNewerCount(it).first() }
