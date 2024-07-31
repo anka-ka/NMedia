@@ -5,21 +5,31 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import ru.netology.nmedia.R
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.datatransferobjects.Post
 import ru.netology.nmedia.entity.PostEntity
+import ru.netology.nmedia.entity.toEntity
 import ru.netology.nmedia.error.ApiError
+import ru.netology.nmedia.error.AppError
 import ru.netology.nmedia.error.AppUnknownError
 import ru.netology.nmedia.error.NetworkError
 import java.io.IOException
+import kotlin.time.Duration.Companion.seconds
 
 class PostRepositoryImpl(
     private val postDao: PostDao,
     private val context: Context
 ) : PostRepository {
-    override val data: LiveData<List<Post>> = postDao.getAll().map{
+    override val data: Flow<List<Post>> = postDao.getAll().map{
         it.map(PostEntity::toDto)
     }
 
@@ -75,6 +85,47 @@ override suspend fun likeById(id: Long) {
 
     override suspend fun shareById(id: Long) {
         TODO("Not yet implemented")
+    }
+    override fun getNewerCount(id: Long): Flow<Int> = flow {
+        while (true) {
+            delay(10.seconds)
+            val response = ApiService.service.getNewer(id)
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            postDao.insert(body.toEntity(hidden = true))
+            emit(body.size)
+        }
+    }
+        .catch { e -> throw AppError.from(e) }
+        .flowOn(Dispatchers.Default)
+
+    override fun getHiddenCount(): Flow<Int> {
+        return postDao.getHiddenCount()
+    }
+
+    override suspend fun getAllVisible() {
+        try {
+            val response = ApiService.service.getAll()
+            if (!response.isSuccessful) {
+                throw RuntimeException(
+                    context.getString(
+                        R.string.response_error
+                    )
+                )
+            }
+            val posts = response.body() ?: emptyList()
+            postDao.insert(posts.map { PostEntity.fromDto(it, hidden = false) })
+
+        } catch (e: Exception) {
+            throw RuntimeException(context.getString(R.string.post_error))
+        }
+    }
+
+    override suspend fun getLastPostId(): Long? {
+        return postDao.getLastPostId().firstOrNull()
     }
 
     override suspend fun save(post: Post) {

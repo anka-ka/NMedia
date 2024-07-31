@@ -17,12 +17,14 @@
     <string name="empty_posts" translatable="false">There are no posts.\nIf you create a new post, it will appear here</string>
     <string name="error_loading" translatable="false">Something went wrong. Try again later</string>
     <string name="retry_loading" translatable="false">Retry</string>
+    <string name="buttonNew" translatable="false">Latest news</string>
     <string name ="post_error" translatable="false">Oops! Your try was failed</string>
     <string name ="response_error" translatable="false">Response body is empty</string>
     <string name="notification_user_new_post" translatable="false">User %1$s published new post</string>
     <string name="google_play_unavailable" translatable="false">Google Api Unavailable</string>
     <string name="channel_remote_name" translatable="false">Server notifications</string>
     <string name="channel_remote_description" translatable="false">Notifications from remote
+
         server</string>
     <string name="save" translatable="false">Save</string>
     <string name="notification_user_liked" translatable="false">User %1$s liked %2$s\'s
