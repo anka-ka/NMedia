@@ -2,8 +2,6 @@ package ru.netology.nmedia.repository
 
 import ApiService
 import android.content.Context
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -13,8 +11,14 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import ru.netology.nmedia.R
 import ru.netology.nmedia.dao.PostDao
+import ru.netology.nmedia.datatransferobjects.Attachment
+import ru.netology.nmedia.datatransferobjects.AttachmentType
+import ru.netology.nmedia.datatransferobjects.Media
+import ru.netology.nmedia.datatransferobjects.MediaUpload
 import ru.netology.nmedia.datatransferobjects.Post
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.entity.toEntity
@@ -22,6 +26,7 @@ import ru.netology.nmedia.error.ApiError
 import ru.netology.nmedia.error.AppError
 import ru.netology.nmedia.error.AppUnknownError
 import ru.netology.nmedia.error.NetworkError
+import ru.netology.nmedia.model.PhotoModel
 import java.io.IOException
 import kotlin.time.Duration.Companion.seconds
 
@@ -143,7 +148,30 @@ override suspend fun likeById(id: Long) {
         }
     }
 
-override suspend fun removeById(id: Long) {
+    override suspend fun saveWithAttachment(post: Post, photo: MediaUpload) {
+        val media = try {
+            upload(photo)
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw AppUnknownError
+        }
+        val postWithAttachment = post.copy(attachment = Attachment(media.id, AttachmentType.IMAGE))
+        save(postWithAttachment)
+    }
+
+    private suspend fun upload(photo: MediaUpload): Media {
+        val file = photo.file ?: throw IllegalArgumentException("Photo file is missing")
+        val response = ApiService.service.upload(
+            MultipartBody.Part.createFormData("file", file.name, file.asRequestBody())
+        )
+        if (!response.isSuccessful) {
+            throw ApiError(response.code(), response.message())
+        }
+        return response.body() ?: throw ApiError(response.code(), response.message())
+    }
+
+    override suspend fun removeById(id: Long) {
     val postEntity = postDao.getById(id)
     postDao.removeById(id)
 

@@ -10,18 +10,20 @@ import ru.netology.nmedia.util.SingleLiveEvent
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
-import android.content.Context
+import android.net.Uri
+import java.io.File
 import androidx.lifecycle.asLiveData
-import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
-import com.github.javafaker.Faker
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import ru.netology.nmedia.datatransferobjects.MediaUpload
 import ru.netology.nmedia.model.FeedModelState
+import ru.netology.nmedia.model.PhotoModel
 
 private val empty = Post(
     id = 0,
@@ -56,7 +58,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             .asLiveData(Dispatchers.Default)
     }
 
-
+    private val noPhoto = PhotoModel()
 
     private val _postCreated = SingleLiveEvent<Unit>()
     val postCreated: LiveData<Unit>
@@ -73,6 +75,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val _newPostsAvailable = MutableLiveData<Boolean>()
     val newPostsAvailable: LiveData<Boolean>
         get() = _newPostsAvailable
+
+    private val _photo = MutableLiveData(noPhoto)
+    val photo: LiveData<PhotoModel>
+        get() = _photo
+
+
 
 
     init {
@@ -91,6 +99,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+    fun setPhoto(uri: Uri, file: File) {
+        _photo.value = PhotoModel(uri, file)
+    }
     fun refreshPosts() {
         viewModelScope.launch {
             _state.postValue(FeedModelState(refreshing = true))
@@ -105,19 +116,30 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     val edited = MutableLiveData(empty)
 
     fun changeContentAndSave(content: String) {
+        val text = content.trim()
 
-        viewModelScope.launch {
-            val faker = Faker()
-            try {
-                edited.value?.let {
-                    repository.save(it.copy(content = content, author = faker.name().fullName()))
-                    _postCreated.postValue(Unit)
+        if (edited.value?.content != text) {
+            edited.value = edited.value?.copy(content = text)
+        }
+
+        edited.value?.let { post ->
+            _postCreated.value = Unit
+            viewModelScope.launch {
+                try {
+                    when (_photo.value) {
+                        noPhoto -> repository.save(post)
+                        else -> _photo.value?.file?.let { file ->
+                            repository.saveWithAttachment(post, MediaUpload(file))
+                        }
+                    }
+                    _state.value = FeedModelState()
+                } catch (e: Exception) {
+                    _state.value = FeedModelState(error = true)
                 }
-                edited.value = empty
-            } catch (e: Exception) {
-                _postCreated.postValue(Unit)
             }
         }
+        edited.value = empty
+        _photo.value = noPhoto
     }
     fun showAll() = viewModelScope.launch {
         repository.showAll()
@@ -125,6 +147,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun edit(post: Post) {
         edited.value = post
+    }
+    fun clearPhoto(){
+        _photo.value = null
     }
 
     fun onCloseEditClicked() {

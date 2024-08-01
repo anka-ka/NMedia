@@ -9,6 +9,11 @@ data class Post(
     var likes: Int = 0,
     var shares: Int = 0,
     val videoLink: String? = null,
-    val authorAvatar: String = ""
+    val authorAvatar: String = "",
+    val attachment: Attachment? = null,
+)
 
+data class Attachment(
+    val url: String,
+    val type: AttachmentType,
 )

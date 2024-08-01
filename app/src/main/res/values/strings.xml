@@ -9,6 +9,8 @@
     <string name="menu_remove" translatable="false">Remove</string>
     <string name="post_text" translatable="false">Post Text</string>
     <string name="menu_edit" translatable="false">Edit</string>
+    <string name="menu_save" translatable="false" >Save</string>
+    <string name="clear" translatable="false" >Clear </string>
     <string name="menu_edit_additional" translatable="false">Edit Message</string>
     <string name="description_post_save" translatable="false">Сохранить</string>
     <string name="error_empty_content" translatable="false">Content can\'t be empty</string>
