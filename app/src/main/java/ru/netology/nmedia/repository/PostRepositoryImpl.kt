@@ -119,18 +119,10 @@ override suspend fun likeById(id: Long) {
             }
             val posts = response.body() ?: emptyList()
             postDao.insert(posts.map { PostEntity.fromDto(it, hidden = false) })
-
         } catch (e: Exception) {
             throw RuntimeException(context.getString(R.string.post_error))
         }
-        val posts = response.body() ?: throw RuntimeException(
-            context.getString(
-                R.string.response_error
-            )
-        )
-        postDao.insert(posts.map(PostEntity::fromDto))
     }
-
     override suspend fun getLastPostId(): Long? {
         return postDao.getLastPostId().firstOrNull()
     }
