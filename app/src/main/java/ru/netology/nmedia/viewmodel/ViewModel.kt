@@ -57,6 +57,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
+
     private val _postCreated = SingleLiveEvent<Unit>()
     val postCreated: LiveData<Unit>
         get() = _postCreated
@@ -117,6 +118,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 _postCreated.postValue(Unit)
             }
         }
+    }
+    fun showAll() = viewModelScope.launch {
+        repository.showAll()
     }
 
     fun edit(post: Post) {

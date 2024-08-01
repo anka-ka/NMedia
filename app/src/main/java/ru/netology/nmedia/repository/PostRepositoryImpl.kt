@@ -81,6 +81,7 @@ override suspend fun likeById(id: Long) {
         throw AppUnknownError
     }
 }
+    override suspend fun showAll() = postDao.showAll()
 
 
     override suspend fun shareById(id: Long) {
@@ -95,7 +96,7 @@ override suspend fun likeById(id: Long) {
             }
 
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-            postDao.insert(body.toEntity(hidden = false))
+            postDao.insert(body.toEntity(hidden = true))
             emit(body.size)
         }
     }

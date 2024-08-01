@@ -102,7 +102,7 @@ class FeedFragment : Fragment() {
         viewModel.newerCount.observe(viewLifecycleOwner) { count ->
             binding.buttonNew.isVisible = count > 0
             binding.buttonNew.setOnClickListener {
-                viewModel.loadPosts()
+                viewModel.showAll()
                 binding.buttonNew.isVisible = false
             }
         }

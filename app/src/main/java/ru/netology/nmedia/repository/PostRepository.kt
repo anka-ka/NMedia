@@ -7,6 +7,7 @@ import ru.netology.nmedia.entity.PostEntity
 
 interface PostRepository {
     val data: Flow<List<Post>>
+    suspend fun showAll()
     suspend fun getAll()
     fun getNewerCount(id: Long): Flow<Int>
     suspend fun getAllVisible()
