@@ -123,6 +123,12 @@ override suspend fun likeById(id: Long) {
         } catch (e: Exception) {
             throw RuntimeException(context.getString(R.string.post_error))
         }
+        val posts = response.body() ?: throw RuntimeException(
+            context.getString(
+                R.string.response_error
+            )
+        )
+        postDao.insert(posts.map(PostEntity::fromDto))
     }
 
     override suspend fun getLastPostId(): Long? {
