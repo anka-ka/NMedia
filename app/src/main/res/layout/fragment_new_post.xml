@@ -78,6 +78,15 @@
             android:layout_height="wrap_content"
             app:icon="@drawable/baseline_add_a_photo_24"
             app:iconTint="?colorOnPrimary" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/close"
+            android:layout_width="297dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/common_spacing"
+            android:contentDescription="Close"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:srcCompat="@drawable/baseline_close_24" />
     </LinearLayout>
 
     <!--    <com.google.android.material.bottomappbar.BottomAppBar-->

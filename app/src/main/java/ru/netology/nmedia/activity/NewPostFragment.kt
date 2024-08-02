@@ -80,15 +80,24 @@ class NewPostFragment : Fragment() {
             viewLifecycleOwner,
         )
 
-        viewModel.photo.observe(viewLifecycleOwner){model ->
-            if(model!=null){
+        viewModel.photo.observe(viewLifecycleOwner) { model ->
+            if (model != null) {
                 binding.preview.setImageURI(model.uri)
                 binding.previewContainer.isVisible = true
-            }else{
+
+                binding.preview.setOnClickListener {
+                    findNavController().navigate(
+                        R.id.action_newPostFragment_to_imageFullScreenFragment,
+                        Bundle().apply {
+                            putString("image_uri", model.uri.toString())
+                        }
+                    )
+                }
+            } else {
                 binding.previewContainer.isGone = true
             }
-
         }
+
         binding.clear.setOnClickListener{
             viewModel.clearPhoto()
         }
@@ -103,6 +112,11 @@ class NewPostFragment : Fragment() {
 
                 }
         }
+        binding.close.setOnClickListener {
+            viewModel.onCloseEditClicked()
+            findNavController().navigateUp()
+        }
+
         binding.pickPhoto.setOnClickListener{
             ImagePicker.Builder(this)
                 .crop()
@@ -113,20 +127,10 @@ class NewPostFragment : Fragment() {
 
                 }
         }
-
-
-//        binding.save.setOnClickListener {
-//            viewModel.changeContentAndSave(binding.content.text.toString())
-//            AndroidUtils.hideKeyboard(requireView())
-//        }
         viewModel.postCreated.observe(viewLifecycleOwner) {
             findNavController().navigateUp()
         }
-
-//        binding.close.setOnClickListener {
-//            viewModel.onCloseEditClicked()
-//            findNavController().navigateUp()
-//        }
         return binding.root
     }
+
 }

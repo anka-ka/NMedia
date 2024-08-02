@@ -13,6 +13,7 @@
     <string name="clear" translatable="false" >Clear </string>
     <string name="menu_edit_additional" translatable="false">Edit Message</string>
     <string name="description_post_save" translatable="false">Сохранить</string>
+    <string name="full_screen_image" translatable="false" >Full screen image </string>
     <string name="error_empty_content" translatable="false">Content can\'t be empty</string>
     <string name="chooser_share_post" translatable="false">Share post</string>
     <string name="add_post" translatable="false">Add post</string>
