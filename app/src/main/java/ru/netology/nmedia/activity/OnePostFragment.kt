@@ -38,14 +38,15 @@ class OnePostFragment : Fragment() {
         )
         viewModel.data.observe(viewLifecycleOwner) { model ->
             val post = model.posts.find { it.id == arguments?.textArg?.toLong() } ?: return@observe
-            val viewHolder = PostViewHolder(binding, object : OnInteractionListener {
 
+            val onInteractionListener = object : OnInteractionListener {
                 override fun onEdit(post: Post) {
                     findNavController().navigate(
                         R.id.action_onePostFragment_to_newPostFragment,
                         Bundle().apply {
                             textArg = post.content
-                        })
+                        }
+                    )
                     viewModel.edit(post)
                 }
 
@@ -59,13 +60,12 @@ class OnePostFragment : Fragment() {
                 }
 
                 override fun onShare(post: Post) {
-                    val  intent = Intent().apply{
+                    val intent = Intent().apply {
                         action = Intent.ACTION_SEND
                         type = "text/plain"
                         putExtra(Intent.EXTRA_TEXT, post.content)
                     }
-                    val shareIntent =
-                        Intent.createChooser(intent, getString(R.string.chooser_share_post))
+                    val shareIntent = Intent.createChooser(intent, getString(R.string.chooser_share_post))
                     startActivity(shareIntent)
                 }
 
@@ -76,15 +76,26 @@ class OnePostFragment : Fragment() {
                     }
                     val playVideoIntent = Intent.createChooser(intent, "video")
                     startActivity(playVideoIntent)
-
                 }
 
                 override fun onOpenOnePost(post: Post) {
-                }
-            })
 
+                }
+
+                override fun onImageClick(imageUrl: String) {
+                    findNavController().navigate(
+                        R.id.action_onePostFragment_to_imageFullScreenFragment,
+                        Bundle().apply {
+                            putString("imageUrl", imageUrl)
+                        }
+                    )
+                }
+            }
+
+            val viewHolder = PostViewHolder(binding, onInteractionListener::onImageClick, onInteractionListener)
             viewHolder.bind(post)
         }
+
         return binding.root
     }
 }

@@ -78,6 +78,7 @@ dependencies {
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     kapt ("androidx.room:room-compiler:2.6.1")
     implementation ("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation ("com.github.dhaval2404:imagepicker:2.1")
     implementation ("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation ("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
@@ -87,4 +88,6 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     implementation(kotlin("script-runtime"))
+    implementation ("com.google.android.material:material:1.12.0")
+    implementation ("androidx.appcompat:appcompat:1.7.0")
 }

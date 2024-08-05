@@ -71,7 +71,10 @@
         app:layout_constraintBottom_toBottomOf="@id/barrier2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/videoImage" />
+        app:layout_constraintTop_toBottomOf="@id/postPhoto" />
+
+
+
 
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/barrier2"
@@ -127,6 +130,17 @@
         app:layout_goneMarginStart="@dimen/small_spacing" />
 
     <ImageView
+        android:id="@+id/postPhoto"
+        android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:scaleType="centerCrop"
+        android:visibility="visible"
+        tools:src="@tools:sample/avatars[4]"
+        app:layout_constraintTop_toBottomOf="@id/barrier"
+
+        />
+
+    <ImageView
         android:id="@+id/videoImage"
         android:layout_width="match_parent"
         android:layout_height="240dp"
@@ -151,6 +165,7 @@
         android:layout_height="wrap_content"
         android:visibility="gone"
         app:constraint_referenced_ids="videoImage,playVideo" />
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

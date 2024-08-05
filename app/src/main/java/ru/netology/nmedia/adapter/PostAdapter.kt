@@ -13,6 +13,7 @@ import com.bumptech.glide.request.RequestOptions
 import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
+import ru.netology.nmedia.datatransferobjects.AttachmentType
 import ru.netology.nmedia.datatransferobjects.Post
 import ru.netology.nmedia.repository.PostRepositoryImpl
 
@@ -23,15 +24,17 @@ interface OnInteractionListener{
     fun onShare(post: Post)
     fun onPlayVideo(post: Post)
     fun onOpenOnePost(post:Post)
+    fun onImageClick(imageUrl: String)
 }
 
 class PostAdapter(
     private val onInteractionListener: OnInteractionListener,
+    private val onImageClick: (String) -> Unit
 ) : ListAdapter<Post, PostViewHolder>(PostDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val view = CardPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return PostViewHolder(view, onInteractionListener)
+        return PostViewHolder(view,onImageClick, onInteractionListener)
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
@@ -42,6 +45,7 @@ class PostAdapter(
 
 class PostViewHolder(
     private val binding: CardPostBinding,
+    private val onImageClick: (String) -> Unit,
     private val onInteractionListener: OnInteractionListener
 
     ) : RecyclerView.ViewHolder(binding.root) {
@@ -78,6 +82,7 @@ class PostViewHolder(
         playVideo.setOnClickListener {
             onInteractionListener.onPlayVideo(post)
         }
+
         menu.setOnClickListener {
             PopupMenu(it.context, it).apply {
                 inflate(R.menu.options_post)
@@ -98,6 +103,22 @@ class PostViewHolder(
         }
         content.setOnClickListener {
             onInteractionListener.onOpenOnePost(post)
+        }
+
+        if (post.attachment != null && post.attachment.type == AttachmentType.IMAGE) {
+            binding.postPhoto.visibility = View.VISIBLE
+            Glide.with(binding.root)
+                .load("${BuildConfig.BASE_URL}media/${post.attachment.url}")
+                .placeholder(R.drawable.ic_loading_100dp)
+                .error(R.drawable.baseline_error_24)
+                .timeout(30_000)
+                .into(binding.postPhoto)
+
+            binding.postPhoto.setOnClickListener {
+                onInteractionListener.onImageClick("${BuildConfig.BASE_URL}media/${post.attachment.url}")
+            }
+        } else {
+            binding.postPhoto.visibility = View.GONE
         }
     }
 }

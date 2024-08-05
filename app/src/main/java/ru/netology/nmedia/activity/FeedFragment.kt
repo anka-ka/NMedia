@@ -11,7 +11,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnInteractionListener
@@ -20,14 +19,10 @@ import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.datatransferobjects.Post
 import ru.netology.nmedia.viewmodel.PostViewModel
 
-
-
-
 class FeedFragment : Fragment() {
     private val viewModel: PostViewModel by viewModels(
         ownerProducer = ::requireParentFragment
     )
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -39,52 +34,64 @@ class FeedFragment : Fragment() {
             false
         )
 
-        val adapter = PostAdapter(object : OnInteractionListener {
-            override fun onEdit(post: Post) {
-                viewModel.edit(post)
-            }
-
-            override fun onRemove(post: Post) {
-                viewModel.removeById(post.id)
-            }
-
-            override fun onLike(post: Post) {
-                viewModel.likeById(post.id)
-            }
-
-            override fun onShare(post: Post) {
-                val intent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    type = "text/plain"
-                    putExtra(Intent.EXTRA_TEXT, post.content)
+        val adapter = PostAdapter(
+            object : OnInteractionListener {
+                override fun onEdit(post: Post) {
+                    viewModel.edit(post)
                 }
-                val shareIntent =
-                    Intent.createChooser(intent, getString(R.string.chooser_share_post))
-                startActivity(shareIntent)
-            }
 
-            override fun onPlayVideo(post: Post) {
-                val intent = Intent().apply {
-                    action = Intent.ACTION_VIEW
-                    data = Uri.parse(post.videoLink)
+                override fun onRemove(post: Post) {
+                    viewModel.removeById(post.id)
                 }
-                val playVideoIntent = Intent.createChooser(intent, "video")
-                startActivity(playVideoIntent)
-            }
 
-            override fun onOpenOnePost(post: Post) {
-                findNavController().navigate(
-                    R.id.action_feedFragment_to_onePostFragment,
-                    Bundle().apply {
-                        textArg = post.id.toString()
-                    })
+                override fun onLike(post: Post) {
+                    viewModel.likeById(post.id)
+                }
+
+                override fun onShare(post: Post) {
+                    val intent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, post.content)
+                    }
+                    val shareIntent = Intent.createChooser(intent, getString(R.string.chooser_share_post))
+                    startActivity(shareIntent)
+                }
+
+                override fun onPlayVideo(post: Post) {
+                    val intent = Intent().apply {
+                        action = Intent.ACTION_VIEW
+                        data = Uri.parse(post.videoLink)
+                    }
+                    val playVideoIntent = Intent.createChooser(intent, "video")
+                    startActivity(playVideoIntent)
+                }
+
+                override fun onOpenOnePost(post: Post) {
+                    findNavController().navigate(
+                        R.id.action_feedFragment_to_onePostFragment,
+                        Bundle().apply {
+                            textArg = post.id.toString()
+                        })
+                }
+
+                override fun onImageClick(imageUrl: String) {
+                    findNavController().navigate(
+                        R.id.action_feedFragment_to_imageFullScreenFragment,
+                        Bundle().apply {
+                            putString("imageUrl", imageUrl)
+                        }
+                    )
+                }
             }
-        })
+        ) { imageUrl ->
+            onImageClick(imageUrl)
+        }
+
         binding.refresh.setOnRefreshListener {
             viewModel.refreshPosts()
         }
         binding.list.adapter = adapter
-
         viewModel.data.observe(viewLifecycleOwner) { state ->
             val newPost = state.posts.size > adapter.currentList.size
             binding.emptyState.isVisible = state.empty
@@ -94,11 +101,9 @@ class FeedFragment : Fragment() {
                 }
             }
         }
-
         viewModel.newPostsAvailable.observe(viewLifecycleOwner) { hasNewPosts ->
             binding.buttonNew.isVisible = hasNewPosts
         }
-
         viewModel.newerCount.observe(viewLifecycleOwner) { count ->
             binding.buttonNew.isVisible = count > 0
             binding.buttonNew.setOnClickListener {
@@ -106,7 +111,6 @@ class FeedFragment : Fragment() {
                 binding.buttonNew.isVisible = false
             }
         }
-
         viewModel.shouldUpdate.observe(viewLifecycleOwner) { shouldUpdate ->
             if (shouldUpdate) {
                 viewModel.data.observe(viewLifecycleOwner) { feedModel ->
@@ -118,43 +122,52 @@ class FeedFragment : Fragment() {
                         }
                     }
                 }
-                viewModel.shouldUpdate.value= false
+                viewModel.shouldUpdate.value = false
             }
         }
 
-            viewModel.state.observe(viewLifecycleOwner) { state ->
-                if (state.error) {
-                    Snackbar.make(
-                        binding.root,
-                        R.string.error_loading,
-                        Snackbar.LENGTH_SHORT
-                    )
-                        .setAction(R.string.retry_loading) {
-                            viewModel.loadPosts()
-                        }
-                        .show()
-                }
-                binding.progress.isVisible = state.loading
-                binding.refresh.isRefreshing = state.refreshing
-            }
-            viewModel.postError.observe(viewLifecycleOwner) { error ->
+        viewModel.state.observe(viewLifecycleOwner) { state ->
+            if (state.error) {
                 Snackbar.make(
-                    requireView(),
-                    error,
-                    Snackbar.LENGTH_LONG
-                ).setAction(R.string.retry_loading) {
-                    viewModel.loadPosts()
-                }.show()
+                    binding.root,
+                    R.string.error_loading,
+                    Snackbar.LENGTH_SHORT
+                )
+                    .setAction(R.string.retry_loading) {
+                        viewModel.loadPosts()
+                    }
+                    .show()
             }
-
-            binding.addNewPost.setOnClickListener {
-                findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
-            }
-
-
-            return binding.root
+            binding.progress.isVisible = state.loading
+            binding.refresh.isRefreshing = state.refreshing
         }
+
+        viewModel.postError.observe(viewLifecycleOwner) { error ->
+            Snackbar.make(
+                requireView(),
+                error,
+                Snackbar.LENGTH_LONG
+            ).setAction(R.string.retry_loading) {
+                viewModel.loadPosts()
+            }.show()
+        }
+
+        binding.addNewPost.setOnClickListener {
+            findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+        }
+
+        return binding.root
     }
+
+    private fun onImageClick(url: String) {
+        findNavController().navigate(
+            R.id.action_feedFragment_to_imageFullScreenFragment,
+            Bundle().apply {
+                putString("imageUrl", url)
+            }
+        )
+    }
+}
 
 
 //       viewModel.data.observe(viewLifecycleOwner) { posts ->
