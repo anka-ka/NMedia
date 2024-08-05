@@ -11,7 +11,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnInteractionListener
@@ -24,7 +23,6 @@ class FeedFragment : Fragment() {
     private val viewModel: PostViewModel by viewModels(
         ownerProducer = ::requireParentFragment
     )
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -94,7 +92,6 @@ class FeedFragment : Fragment() {
             viewModel.refreshPosts()
         }
         binding.list.adapter = adapter
-
         viewModel.data.observe(viewLifecycleOwner) { state ->
             val newPost = state.posts.size > adapter.currentList.size
             binding.emptyState.isVisible = state.empty
@@ -104,11 +101,9 @@ class FeedFragment : Fragment() {
                 }
             }
         }
-
         viewModel.newPostsAvailable.observe(viewLifecycleOwner) { hasNewPosts ->
             binding.buttonNew.isVisible = hasNewPosts
         }
-
         viewModel.newerCount.observe(viewLifecycleOwner) { count ->
             binding.buttonNew.isVisible = count > 0
             binding.buttonNew.setOnClickListener {
@@ -116,7 +111,6 @@ class FeedFragment : Fragment() {
                 binding.buttonNew.isVisible = false
             }
         }
-
         viewModel.shouldUpdate.observe(viewLifecycleOwner) { shouldUpdate ->
             if (shouldUpdate) {
                 viewModel.data.observe(viewLifecycleOwner) { feedModel ->
@@ -162,8 +156,7 @@ class FeedFragment : Fragment() {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
         }
 
-            return binding.root
-        }
+        return binding.root
     }
 
     private fun onImageClick(url: String) {

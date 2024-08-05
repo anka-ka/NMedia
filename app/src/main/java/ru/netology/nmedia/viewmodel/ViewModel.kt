@@ -15,7 +15,6 @@ import java.io.File
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
-
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
@@ -140,9 +139,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         }
         edited.value = empty
         _photo.value = noPhoto
-    }
-    fun showAll() = viewModelScope.launch {
-        repository.showAll()
     }
     fun showAll() = viewModelScope.launch {
         repository.showAll()
