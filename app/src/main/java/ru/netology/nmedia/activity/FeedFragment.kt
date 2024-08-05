@@ -162,7 +162,8 @@ class FeedFragment : Fragment() {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
         }
 
-        return binding.root
+            return binding.root
+        }
     }
 
     private fun onImageClick(url: String) {

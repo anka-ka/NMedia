@@ -4,6 +4,7 @@ package ru.netology.nmedia.repository
 import kotlinx.coroutines.flow.Flow
 import ru.netology.nmedia.datatransferobjects.MediaUpload
 import ru.netology.nmedia.datatransferobjects.Post
+import ru.netology.nmedia.entity.PostEntity
 
 interface PostRepository {
     val data: Flow<List<Post>>

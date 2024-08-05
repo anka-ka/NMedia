@@ -144,6 +144,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun showAll() = viewModelScope.launch {
         repository.showAll()
     }
+    fun showAll() = viewModelScope.launch {
+        repository.showAll()
+    }
 
     fun edit(post: Post) {
         edited.value = post
