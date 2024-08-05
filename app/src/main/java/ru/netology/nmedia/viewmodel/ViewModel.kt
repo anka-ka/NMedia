@@ -11,9 +11,15 @@ import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
 import android.content.Context
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
+import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import com.github.javafaker.Faker
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.model.FeedModelState
 
@@ -39,9 +45,19 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val _state = MutableLiveData<FeedModelState>()
     val state: LiveData<FeedModelState>
         get() = _state
-    val data: LiveData<FeedModel> = repository.data.map {
-        FeedModel(posts = it, empty = it.isEmpty())
+
+    val data: LiveData<FeedModel> = repository.data
+        .map(::FeedModel)
+        .asLiveData(Dispatchers.Default)
+
+    val newerCount: LiveData<Int> = data.switchMap {
+        repository.getNewerCount(it.posts.firstOrNull()?.id ?: 0L)
+            .catch { e -> e.printStackTrace() }
+            .asLiveData(Dispatchers.Default)
     }
+
+
+
     private val _postCreated = SingleLiveEvent<Unit>()
     val postCreated: LiveData<Unit>
         get() = _postCreated
@@ -49,6 +65,14 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val _postError = SingleLiveEvent<String>()
     val postError: LiveData<String>
         get() = _postError
+
+    private val _shouldUpdate = MutableLiveData(false)
+    val shouldUpdate: MutableLiveData<Boolean>
+        get() = _shouldUpdate
+
+    private val _newPostsAvailable = MutableLiveData<Boolean>()
+    val newPostsAvailable: LiveData<Boolean>
+        get() = _newPostsAvailable
 
 
     init {
@@ -58,11 +82,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun loadPosts() {
         viewModelScope.launch {
             _state.postValue(FeedModelState(loading = true))
-            _state.value = try {
+            try {
                 repository.getAll()
-                FeedModelState()
+                _state.value = FeedModelState()
+                checkForNewPosts()
             } catch (e: Exception) {
-                FeedModelState(error = true)
+                _state.value = FeedModelState(error = true)
             }
         }
     }
@@ -70,7 +95,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _state.postValue(FeedModelState(refreshing = true))
             _state.value = try {
-                repository.getAll()
+                repository.getAllVisible()
                 FeedModelState()
             } catch (e: Exception) {
                 FeedModelState(error = true)
@@ -93,6 +118,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 _postCreated.postValue(Unit)
             }
         }
+    }
+    fun showAll() = viewModelScope.launch {
+        repository.showAll()
     }
 
     fun edit(post: Post) {
@@ -131,5 +159,24 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         error.let {
             _postError.postValue(it)
         }
+    }
+    private suspend fun checkForNewPosts() {
+        val lastKnownPostId = repository.getLastPostId()
+        val newPostsCount = lastKnownPostId?.let { repository.getNewerCount(it).first() }
+        if (newPostsCount != null) {
+            _newPostsAvailable.postValue(newPostsCount > 0)
+        }
+    }
+
+    fun getAllVisible() {
+        viewModelScope.launch {
+            try {
+                repository.getAllVisible()
+                _shouldUpdate.postValue(true)
+                _newPostsAvailable.postValue(false)
+            } catch (e: Exception) {
+                    _state.postValue(FeedModelState(error = true))
+                }
+            }
     }
 }

@@ -3,7 +3,6 @@
 package ru.netology.nmedia.dao
 
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -17,7 +16,22 @@ import ru.netology.nmedia.util.getTime
 interface PostDao {
 
     @Query("SELECT * FROM PostEntity ORDER BY id DESC")
-    fun getAll(): LiveData<List<PostEntity>>
+    fun getAll(): Flow<List<PostEntity>>
+
+    @Query("SELECT * FROM PostEntity WHERE hidden = 0 ORDER BY id DESC ")
+    fun getAllVisible(): Flow<List<PostEntity>>
+
+    @Query("UPDATE PostEntity SET hidden = 0")
+    suspend fun showAll()
+
+    @Query("SELECT COUNT(*) FROM PostEntity WHERE hidden = 1")
+    fun getHiddenCount(): Flow<Int>
+
+    @Query("SELECT id FROM PostEntity ORDER BY id DESC LIMIT 1")
+    fun getLastPostId(): Flow<Long?>
+
+    @Query("SELECT COUNT(*) == 0 FROM PostEntity")
+    suspend fun isEmpty(): Boolean
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(post: PostEntity)

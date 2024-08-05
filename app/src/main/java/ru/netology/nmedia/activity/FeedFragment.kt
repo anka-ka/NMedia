@@ -3,6 +3,7 @@ package ru.netology.nmedia
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +11,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnInteractionListener
@@ -51,7 +53,7 @@ class FeedFragment : Fragment() {
             }
 
             override fun onShare(post: Post) {
-                val  intent = Intent().apply{
+                val intent = Intent().apply {
                     action = Intent.ACTION_SEND
                     type = "text/plain"
                     putExtra(Intent.EXTRA_TEXT, post.content)
@@ -92,38 +94,69 @@ class FeedFragment : Fragment() {
                 }
             }
         }
-        viewModel.state.observe(viewLifecycleOwner) { state ->
-            if (state.error) {
-                Snackbar.make(
-                    binding.root,
-                    R.string.error_loading,
-                    Snackbar.LENGTH_SHORT)
-                    .setAction(R.string.retry_loading) {
-                        viewModel.loadPosts()
-                    }
-                    .show()
+
+        viewModel.newPostsAvailable.observe(viewLifecycleOwner) { hasNewPosts ->
+            binding.buttonNew.isVisible = hasNewPosts
+        }
+
+        viewModel.newerCount.observe(viewLifecycleOwner) { count ->
+            binding.buttonNew.isVisible = count > 0
+            binding.buttonNew.setOnClickListener {
+                viewModel.showAll()
+                binding.buttonNew.isVisible = false
             }
-            binding.progress.isVisible = state.loading
-            binding.refresh.isRefreshing = state.refreshing
-        }
-        viewModel.postError.observe(viewLifecycleOwner) { error ->
-            Snackbar.make(
-                requireView(),
-                error,
-                Snackbar.LENGTH_LONG
-            ).setAction(R.string.retry_loading) {
-                viewModel.loadPosts()
-            }.show()
         }
 
-        binding.addNewPost.setOnClickListener {
-            findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
-       }
+        viewModel.shouldUpdate.observe(viewLifecycleOwner) { shouldUpdate ->
+            if (shouldUpdate) {
+                viewModel.data.observe(viewLifecycleOwner) { feedModel ->
+                    val newPostCount = feedModel.posts.size
+                    binding.emptyState.isVisible = feedModel.empty
+                    adapter.submitList(feedModel.posts) {
+                        if (newPostCount > 0) {
+                            binding.list.smoothScrollToPosition(0)
+                        }
+                    }
+                }
+                viewModel.shouldUpdate.value= false
+            }
+        }
+
+            viewModel.state.observe(viewLifecycleOwner) { state ->
+                if (state.error) {
+                    Snackbar.make(
+                        binding.root,
+                        R.string.error_loading,
+                        Snackbar.LENGTH_SHORT
+                    )
+                        .setAction(R.string.retry_loading) {
+                            viewModel.loadPosts()
+                        }
+                        .show()
+                }
+                binding.progress.isVisible = state.loading
+                binding.refresh.isRefreshing = state.refreshing
+            }
+            viewModel.postError.observe(viewLifecycleOwner) { error ->
+                Snackbar.make(
+                    requireView(),
+                    error,
+                    Snackbar.LENGTH_LONG
+                ).setAction(R.string.retry_loading) {
+                    viewModel.loadPosts()
+                }.show()
+            }
+
+            binding.addNewPost.setOnClickListener {
+                findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+            }
 
 
-        return binding.root
+            return binding.root
+        }
     }
-}
+
+
 //       viewModel.data.observe(viewLifecycleOwner) { posts ->
 //            val newPost = posts.size > adapter.currentList.size
 //            adapter.submitList(posts) {
