@@ -13,8 +13,18 @@ import com.google.firebase.messaging.FirebaseMessaging
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import android.Manifest
+import android.annotation.SuppressLint
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import androidx.activity.viewModels
+import androidx.core.view.MenuProvider
+import androidx.lifecycle.ViewModel
+import ru.netology.nmedia.auth.AppAuth
+import ru.netology.nmedia.viewmodel.AuthViewModel
 
 class AppActivity : AppCompatActivity(R.layout.activity_app) {
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,7 +35,41 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                 }
             }
             checkGoogleApiAvailability()
-        }
+
+        val viewModel by viewModels<AuthViewModel>()
+            addMenuProvider(
+                object : MenuProvider{
+                    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                        menuInflater.inflate(R.menu.auth_menu, menu)
+                        viewModel.authData.observe(this@AppActivity){
+                            val isAuthenticated = viewModel.isAuthenticated
+
+                            menu.setGroupVisible(R.id.authenticated, !isAuthenticated)
+                            menu.setGroupVisible(R.id.unauthenticated, isAuthenticated)
+
+                        }
+
+                    }
+
+                    override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
+                        when (menuItem.itemId) {
+                            R.id.sing_in,
+                            R.id.sing_up -> {
+                                AppAuth.getInstance().setAuth(5, "x-token")
+                                true
+                            }
+
+                            R.id.logout -> {
+                                AppAuth.getInstance().clearAuth()
+                                true
+                            }
+
+                            else -> false
+                        }
+                }
+            )
+    }
+
 
         private fun requestNotificationsPermission() {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {

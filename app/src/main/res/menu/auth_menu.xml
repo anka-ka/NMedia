@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <group android:id="@+id/authenticated"
+        tools:visible="true">
+        <item
+            android:id="@+id/sing_in"
+            android:title="@string/sing_in" />
+        <item
+            android:id="@+id/sing_up"
+            android:title="@string/sing_up" />
+
+    </group>
+    <group android:id="@+id/unauthenticated" tools:visible="false">
+        <item
+            android:id="@+id/logout"
+            android:title="@string/logout" />
+    </group>
+
+</menu>

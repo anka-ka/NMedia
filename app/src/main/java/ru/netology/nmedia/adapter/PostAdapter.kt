@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -61,6 +62,8 @@ class PostViewHolder(
         likes.isChecked = post.likedByMe
         likes.text = cutLongNumbers(post.likes)
 
+        menu.isVisible = post.ownedByMe
+
         Glide.with(binding.root)
             .load("${BuildConfig.BASE_URL}avatars/${post.authorAvatar}")
             .placeholder(R.drawable.ic_loading_100dp)
@@ -82,6 +85,8 @@ class PostViewHolder(
         playVideo.setOnClickListener {
             onInteractionListener.onPlayVideo(post)
         }
+
+
 
         menu.setOnClickListener {
             PopupMenu(it.context, it).apply {

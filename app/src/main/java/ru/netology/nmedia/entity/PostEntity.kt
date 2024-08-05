@@ -12,6 +12,7 @@ data class PostEntity(
     val id: Long,
     val author: String,
     val content: String,
+    val authorId:Long,
     val published: String,
     val likedByMe: Boolean,
     val likes: Int = 0,
@@ -27,12 +28,14 @@ data class PostEntity(
         author = author,
         authorAvatar = authorAvatar,
         content = content,
+        authorId = authorId,
         published = published,
         likes = likes,
         shares = shares,
         likedByMe = likedByMe,
         videoLink = videoLink,
         attachment = attachment?.toDto(),
+
     )
 
     companion object {
@@ -41,6 +44,7 @@ data class PostEntity(
                 dto.id,
                 dto.author,
                 dto.content,
+                dto.authorId,
                 dto.published,
                 dto.likedByMe,
                 dto.likes,
