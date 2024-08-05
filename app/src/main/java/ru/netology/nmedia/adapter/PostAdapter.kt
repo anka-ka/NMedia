@@ -108,14 +108,14 @@ class PostViewHolder(
         if (post.attachment != null && post.attachment.type == AttachmentType.IMAGE) {
             binding.postPhoto.visibility = View.VISIBLE
             Glide.with(binding.root)
-                .load(post.attachment.url)
+                .load("${BuildConfig.BASE_URL}media/${post.attachment.url}")
                 .placeholder(R.drawable.ic_loading_100dp)
                 .error(R.drawable.baseline_error_24)
                 .timeout(30_000)
                 .into(binding.postPhoto)
 
             binding.postPhoto.setOnClickListener {
-                onInteractionListener.onImageClick(post.attachment.url)
+                onInteractionListener.onImageClick("${BuildConfig.BASE_URL}media/${post.attachment.url}")
             }
         } else {
             binding.postPhoto.visibility = View.GONE
