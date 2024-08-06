@@ -18,11 +18,14 @@ import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.ViewModel
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment.Companion.findNavController
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.viewmodel.AuthViewModel
 
 class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
+    private val viewModel: AuthViewModel by viewModels()
 
     @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,6 +37,12 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                 }
             }
             checkGoogleApiAvailability()
+
+
+        viewModel.authData.observe(this) {
+            invalidateOptionsMenu()
+        }
+
 
         val viewModel by viewModels<AuthViewModel>()
             addMenuProvider(
@@ -52,9 +61,14 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
                     override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
                         when (menuItem.itemId) {
-                            R.id.sing_in,
-                            R.id.sing_up -> {
+                            R.id.sing_in -> {
+                                findNavController(R.id.nav_host_fragment)
+                                    .navigate(R.id.action_appActivity_to_loginAndPasswordFragment)
                                 AppAuth.getInstance().setAuth(5, "x-token")
+                                true
+                            }
+
+                            R.id.sing_up -> {
                                 true
                             }
 
@@ -70,7 +84,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
     }
 
 
-        private fun requestNotificationsPermission() {
+    private fun requestNotificationsPermission() {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                 return
             }

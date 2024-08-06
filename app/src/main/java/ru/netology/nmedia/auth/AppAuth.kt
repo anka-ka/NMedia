@@ -25,16 +25,18 @@ class AppAuth private constructor(context: Context) {
 
     @Synchronized
     fun setAuth(id: Long, token: String) {
-        prefs.edit {
-            putLong(ID_KEY, id)
-            putString(TOKEN_KEY, token)
-        }
+        prefs.edit()
+            .putLong(ID_KEY, id)
+            .putString(TOKEN_KEY, token)
+            .apply()
         _data.value = Token(id, token)
     }
 
     @Synchronized
     fun clearAuth() {
-        prefs.edit { clear() }
+        prefs.edit()
+            .clear()
+            .apply()
         _data.value = null
     }
 

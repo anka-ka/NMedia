@@ -1,14 +1,14 @@
-import okhttp3.Interceptor
+
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.create
 import retrofit2.http.Body
 import retrofit2.http.DELETE
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
@@ -18,7 +18,8 @@ import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.datatransferobjects.Media
 import ru.netology.nmedia.datatransferobjects.Post
-import java.util.concurrent.TimeUnit
+import ru.netology.nmedia.datatransferobjects.Token
+
 
 
 const val BASE_URL = "${BuildConfig.BASE_URL}api/slow/"
@@ -31,27 +32,21 @@ private val logging = HttpLoggingInterceptor().apply {
 
 private val okhttp = OkHttpClient.Builder()
     .addInterceptor(logging)
-    .addInterceptor{chain ->
+    .addInterceptor { chain ->
         chain.proceed(
-            AppAuth.getInstance().data.value?.token?.let{
+            AppAuth.getInstance().data.value?.token?.let {
                 chain.request().newBuilder()
-                    .addHeader("Authorisation", it)
+                    .addHeader("Authorization", it)
                     .build()
-
-        }?: chain.request()
+            } ?: chain.request()
         )
     }
     .build()
 
-private val client = OkHttpClient.Builder()
-    .connectTimeout(10,TimeUnit.SECONDS)
-    .build()
-
 private val retrofit = Retrofit.Builder()
     .addConverterFactory(GsonConverterFactory.create())
-    .client(client)
+    .client(okhttp)
     .baseUrl(BASE_URL)
-
     .build()
 
 interface PostsApiService {
@@ -79,10 +74,17 @@ interface PostsApiService {
     @Multipart
     @POST("media")
     suspend fun upload(@Part file: MultipartBody.Part): Response<Media>
+
+    @FormUrlEncoded
+    @POST("users/authentication")
+    suspend fun authenticate(
+        @Field("login") login: String,
+        @Field("pass") password: String
+    ): Response<Token>
 }
 
 object ApiService {
     val service: PostsApiService by lazy {
-        retrofit.create<PostsApiService>()
+        retrofit.create(PostsApiService::class.java)
     }
 }
