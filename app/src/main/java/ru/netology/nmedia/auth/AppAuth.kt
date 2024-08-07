@@ -1,8 +1,15 @@
 package ru.netology.nmedia.auth
 
+import ApiService
 import android.content.Context
 import androidx.core.content.edit
+import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import ru.netology.nmedia.datatransferobjects.PushToken
 import ru.netology.nmedia.datatransferobjects.Token
 
 class AppAuth private constructor(context: Context) {
@@ -20,6 +27,7 @@ class AppAuth private constructor(context: Context) {
         } else {
             prefs.edit { clear() }
         }
+        sendPushToken()
     }
 
 
@@ -30,6 +38,7 @@ class AppAuth private constructor(context: Context) {
             .putString(TOKEN_KEY, token)
             .apply()
         _data.value = Token(id, token)
+        sendPushToken()
     }
 
     @Synchronized
@@ -38,6 +47,19 @@ class AppAuth private constructor(context: Context) {
             .clear()
             .apply()
         _data.value = null
+        sendPushToken()
+    }
+
+    fun sendPushToken(token: String? = null) {
+        CoroutineScope(Dispatchers.Default).launch {
+            val dto = PushToken(token ?: FirebaseMessaging.getInstance().token.await())
+
+            try {
+                ApiService.service.sendPushToken(dto)
+            } catch (e: Exception) {
+
+            }
+        }
     }
 
     companion object {

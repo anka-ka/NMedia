@@ -18,6 +18,7 @@ import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.datatransferobjects.Media
 import ru.netology.nmedia.datatransferobjects.Post
+import ru.netology.nmedia.datatransferobjects.PushToken
 import ru.netology.nmedia.datatransferobjects.Token
 
 
@@ -74,6 +75,9 @@ interface PostsApiService {
     @Multipart
     @POST("media")
     suspend fun upload(@Part file: MultipartBody.Part): Response<Media>
+
+    @POST("users/push-token")
+    suspend fun sendPushToken(@Body token: PushToken)
 
     @FormUrlEncoded
     @POST("users/authentication")

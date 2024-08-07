@@ -73,7 +73,7 @@ dependencies {
     implementation ("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.firebase:firebase-messaging-ktx:24.0.0")
     implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-vertexai:16.0.0-beta03")
+    implementation("com.google.firebase:firebase-vertexai:16.0.0-beta04")
     implementation ("com.github.bumptech.glide:glide:5.0.0-rc01")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     kapt ("androidx.room:room-compiler:2.6.1")
@@ -90,4 +90,6 @@ dependencies {
     implementation(kotlin("script-runtime"))
     implementation ("com.google.android.material:material:1.12.0")
     implementation ("androidx.appcompat:appcompat:1.7.0")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.0")
+    implementation ("com.google.android.gms:play-services-basement:18.4.0")
 }
