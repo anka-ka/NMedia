@@ -47,7 +47,7 @@ class FCMService : FirebaseMessagingService() {
             gson.fromJson(it, NotificationContent::class.java)
         }
         val recipientId = contentObject?.recipientId
-        val currentRecipientId = AppAuth.getInstance().data.value?.id
+        val currentRecipientId = AppAuth.getInstance().data.value?.id?: 0L
 
         when {
             recipientId == null -> {
