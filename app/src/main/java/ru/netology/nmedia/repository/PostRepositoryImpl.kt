@@ -1,6 +1,6 @@
 package ru.netology.nmedia.repository
 
-import ApiService
+import PostsApiService
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -32,7 +32,9 @@ import kotlin.time.Duration.Companion.seconds
 
 class PostRepositoryImpl(
     private val postDao: PostDao,
-    private val context: Context
+    private val context: Context,
+    private val apiService: PostsApiService,
+
 ) : PostRepository {
     override val data: Flow<List<Post>> = postDao.getAllVisible().map{
         it.map(PostEntity::toDto)
@@ -40,7 +42,7 @@ class PostRepositoryImpl(
 
 
     override suspend fun getAll() {
-        val response = ApiService.service.getAll()
+        val response = apiService.getAll()
         if (!response.isSuccessful) {
             throw RuntimeException(
                 context.getString(
@@ -64,9 +66,9 @@ override suspend fun likeById(id: Long) {
     try {
         val response = withContext(Dispatchers.IO) {
             if (post.likedByMe) {
-                ApiService.service.dislikeById(id)
+                apiService.dislikeById(id)
             } else {
-                ApiService.service.likeById(id)
+                apiService.likeById(id)
             }
         }
 
@@ -95,7 +97,7 @@ override suspend fun likeById(id: Long) {
     override fun getNewerCount(id: Long): Flow<Int> = flow {
         while (true) {
             delay(10.seconds)
-            val response = ApiService.service.getNewer(id)
+            val response = apiService.getNewer(id)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -114,7 +116,7 @@ override suspend fun likeById(id: Long) {
 
     override suspend fun getAllVisible() {
         try {
-            val response = ApiService.service.getAll()
+            val response = apiService.getAll()
             if (!response.isSuccessful) {
                 throw RuntimeException(
                     context.getString(
@@ -134,7 +136,7 @@ override suspend fun likeById(id: Long) {
 
     override suspend fun save(post: Post) {
         try {
-            val response = ApiService.service.save(post)
+            val response = apiService.save(post)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -162,7 +164,7 @@ override suspend fun likeById(id: Long) {
 
     private suspend fun upload(photo: MediaUpload): Media {
         val file = photo.file ?: throw IllegalArgumentException("Photo file is missing")
-        val response = ApiService.service.upload(
+        val response = apiService.upload(
             MultipartBody.Part.createFormData("file", file.name, file.asRequestBody())
         )
         if (!response.isSuccessful) {
@@ -176,7 +178,7 @@ override suspend fun likeById(id: Long) {
     postDao.removeById(id)
 
     try {
-        val response = ApiService.service.removeById(id)
+        val response = apiService.removeById(id)
         if (!response.isSuccessful) {
             if (postEntity != null) {
                 postDao.insert(postEntity)

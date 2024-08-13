@@ -1,6 +1,5 @@
 package ru.netology.nmedia.auth
 
-import ApiService
 import android.content.Context
 import androidx.core.content.edit
 import com.google.firebase.messaging.FirebaseMessaging
@@ -11,8 +10,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import ru.netology.nmedia.datatransferobjects.PushToken
 import ru.netology.nmedia.datatransferobjects.Token
+import ru.netology.nmedia.di.DependencyContainer
 
-class AppAuth private constructor(context: Context) {
+class AppAuth (context: Context) {
+
+    private  val ID_KEY = "ID_KEY"
+    private  val TOKEN_KEY = "TOKEN_KEY"
 
     private val prefs = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
     private val _data = MutableStateFlow<Token?>(null)
@@ -55,31 +58,12 @@ class AppAuth private constructor(context: Context) {
             val dto = PushToken(token ?: FirebaseMessaging.getInstance().token.await())
 
             try {
-                ApiService.service.sendPushToken(dto)
+                DependencyContainer.getInstance().apiService.sendPushToken(dto)
             } catch (e: Exception) {
 
             }
         }
     }
 
-    companion object {
-        private const val ID_KEY = "ID_KEY"
-        private const val TOKEN_KEY = "TOKEN_KEY"
-        @Volatile
-        private var appAuth: AppAuth? = null
 
-        fun getInstance(): AppAuth {
-            return appAuth ?: throw IllegalStateException("Need to call init(context) before")
-        }
-
-        fun init(context: Context) {
-            if (appAuth == null) {
-                synchronized(this) {
-                    if (appAuth == null) {
-                        appAuth = AppAuth(context)
-                    }
-                }
-            }
-        }
-    }
 }
