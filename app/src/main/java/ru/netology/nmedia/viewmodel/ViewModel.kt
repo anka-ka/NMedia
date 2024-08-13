@@ -1,16 +1,14 @@
 package ru.netology.nmedia.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import ru.netology.nmedia.datatransferobjects.Post
-import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.util.SingleLiveEvent
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.PostRepository
-import ru.netology.nmedia.repository.PostRepositoryImpl
 import android.net.Uri
+import androidx.lifecycle.ViewModel
 import java.io.File
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.switchMap
@@ -39,11 +37,12 @@ private val empty = Post(
 
 
 
-class PostViewModel(application: Application) : AndroidViewModel(application) {
+class PostViewModel(
+    private  val repository: PostRepository,
+     appAuth: AppAuth,
 
-    private val repository: PostRepository = with(AppDb.getInstance(context = application)) {
-        PostRepositoryImpl(postDao(), application)
-    }
+    ) : ViewModel() {
+
 
 
     private val _state = MutableLiveData<FeedModelState>()
@@ -51,7 +50,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         get() = _state
 
 
-    val data: LiveData<FeedModel> = AppAuth.getInstance().data
+    val data: LiveData<FeedModel> = appAuth.data
         .flatMapLatest { token ->
             val myId = token?.id
 

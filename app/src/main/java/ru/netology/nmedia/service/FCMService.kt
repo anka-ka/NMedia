@@ -18,6 +18,7 @@ import com.google.gson.Gson
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.AppActivity
 import ru.netology.nmedia.auth.AppAuth
+import ru.netology.nmedia.di.DependencyContainer
 
 import kotlin.random.Random
 class FCMService : FirebaseMessagingService() {
@@ -47,7 +48,7 @@ class FCMService : FirebaseMessagingService() {
             gson.fromJson(it, NotificationContent::class.java)
         }
         val recipientId = contentObject?.recipientId
-        val currentRecipientId = AppAuth.getInstance().data.value?.id?: 0L
+        val currentRecipientId = DependencyContainer.getInstance().appAuth.data.value?.id?: 0L
 
         when {
             recipientId == null -> {
@@ -60,11 +61,11 @@ class FCMService : FirebaseMessagingService() {
             }
             recipientId == 0L -> {
                 Log.i("FCMService", "Anonymous authentication detected. Resending push token.")
-                AppAuth.getInstance().sendPushToken()
+                DependencyContainer.getInstance().appAuth.sendPushToken()
             }
             recipientId != 0L && recipientId != currentRecipientId -> {
                 Log.i("FCMService", "Different authentication detected. Resending push token.")
-                AppAuth.getInstance().sendPushToken()
+                DependencyContainer.getInstance().appAuth.sendPushToken()
             }
         }
     }
@@ -92,7 +93,7 @@ class FCMService : FirebaseMessagingService() {
     }
 
     override fun onNewToken(token: String) {
-        AppAuth.getInstance().sendPushToken(token)
+        DependencyContainer.getInstance().appAuth.sendPushToken(token)
     }
 
     private fun handleLike(content: Like) {

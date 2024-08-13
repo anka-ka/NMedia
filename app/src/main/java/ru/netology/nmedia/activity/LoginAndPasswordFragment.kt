@@ -13,14 +13,16 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 
 import ru.netology.nmedia.databinding.LoginAndPasswordBinding
+import ru.netology.nmedia.di.DependencyContainer
 import ru.netology.nmedia.repository.UserRepository
 import ru.netology.nmedia.viewmodel.LoginViewModel
 
 
 class LoginAndPasswordFragment : Fragment() {
+    private val dependencyContainer = DependencyContainer.getInstance()
 
     private val viewModel: LoginViewModel by viewModels {
-        val apiService = ApiService.service
+        val apiService = dependencyContainer.apiService
         val userRepository = UserRepository(apiService)
 
         LoginViewModelFactory(userRepository)

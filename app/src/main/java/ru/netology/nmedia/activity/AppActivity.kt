@@ -17,15 +17,20 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.core.view.MenuProvider
-import androidx.lifecycle.ViewModel
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.NavHostFragment.Companion.findNavController
-import ru.netology.nmedia.auth.AppAuth
+import ru.netology.nmedia.di.DependencyContainer
 import ru.netology.nmedia.viewmodel.AuthViewModel
+import ru.netology.nmedia.viewmodel.ViewModelFactory
 
 class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
-    private val viewModel: AuthViewModel by viewModels()
+    private val dependencyContainer = DependencyContainer.getInstance()
+
+    private val viewModel: AuthViewModel by viewModels(
+        factoryProducer = {
+            ViewModelFactory(dependencyContainer.repository, dependencyContainer.appAuth)
+        }
+    )
 
     @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,7 +69,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                             R.id.sing_in -> {
                                 findNavController(R.id.nav_host_fragment)
                                     .navigate(R.id.action_appActivity_to_loginAndPasswordFragment)
-                                AppAuth.getInstance().setAuth(5, "x-token")
+                                dependencyContainer.appAuth.setAuth(5, "x-token")
                                 true
                             }
 
@@ -73,7 +78,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                             }
 
                             R.id.logout -> {
-                                AppAuth.getInstance().clearAuth()
+                                dependencyContainer.appAuth.clearAuth()
                                 true
                             }
 
