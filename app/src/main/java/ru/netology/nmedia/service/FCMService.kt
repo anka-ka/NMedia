@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.Manifest
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.messaging.FirebaseMessagingService
@@ -16,6 +17,7 @@ import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.AppActivity
+import ru.netology.nmedia.auth.AppAuth
 
 import kotlin.random.Random
 class FCMService : FirebaseMessagingService() {
@@ -23,6 +25,7 @@ class FCMService : FirebaseMessagingService() {
     private val content = "content"
     private val channelId = "remote"
     private val gson = Gson()
+
     override fun onCreate() {
         super.onCreate()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -36,8 +39,36 @@ class FCMService : FirebaseMessagingService() {
             manager.createNotificationChannel(channel)
         }
     }
+
     override fun onMessageReceived(message: RemoteMessage) {
-        println(message)
+
+        val contentJson = message.data["content"]
+        val contentObject = contentJson?.let {
+            gson.fromJson(it, NotificationContent::class.java)
+        }
+        val recipientId = contentObject?.recipientId
+        val currentRecipientId = AppAuth.getInstance().data.value?.id?: 0L
+
+        when {
+            recipientId == null -> {
+                Log.i("FCMService", "Mass notification received.")
+                showNotification(message)
+            }
+            recipientId == currentRecipientId -> {
+                Log.i("FCMService", "Notification for current recipient received.")
+                showNotification(message)
+            }
+            recipientId == 0L -> {
+                Log.i("FCMService", "Anonymous authentication detected. Resending push token.")
+                AppAuth.getInstance().sendPushToken()
+            }
+            recipientId != 0L && recipientId != currentRecipientId -> {
+                Log.i("FCMService", "Different authentication detected. Resending push token.")
+                AppAuth.getInstance().sendPushToken()
+            }
+        }
+    }
+    private fun showNotification(message: RemoteMessage) {
         message.data[action]?.let {
             try {
                 when (Action.valueOf(it)) {
@@ -54,15 +85,16 @@ class FCMService : FirebaseMessagingService() {
                         )
                     )
                 }
-            }
-            catch (e:RuntimeException){
+            } catch (e: RuntimeException) {
                 println("ERROR")
             }
         }
     }
+
     override fun onNewToken(token: String) {
-        println(token)
+        AppAuth.getInstance().sendPushToken(token)
     }
+
     private fun handleLike(content: Like) {
         val intent = Intent(this, AppActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
@@ -87,6 +119,7 @@ class FCMService : FirebaseMessagingService() {
 
         notify(notification)
     }
+
     private fun handleNewPost(content: Post) {
         val notification = NotificationCompat.Builder(this, channelId)
             .setSmallIcon(R.drawable.ic_notification)
@@ -99,8 +132,7 @@ class FCMService : FirebaseMessagingService() {
             .setContentText(
                 content.content
             )
-            .setStyle(NotificationCompat.BigTextStyle()
-                .bigText(content.content))
+            .setStyle(NotificationCompat.BigTextStyle().bigText(content.content))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .build()
 
@@ -119,18 +151,24 @@ class FCMService : FirebaseMessagingService() {
         }
     }
 }
-        enum class Action {
-            LIKE,
-            POST
-        }
 
-        data class Like(
-        val postId: Long,
-        val userName: String,
-        val postAuthor: String
-        )
-        data class Post(
-            val postId: Long,
-            val postAuthor: String,
-            val content: String,
-        )
+enum class Action {
+    LIKE,
+    POST
+}
+
+data class Like(
+    val postId: Long,
+    val userName: String,
+    val postAuthor: String
+)
+
+data class Post(
+    val postId: Long,
+    val postAuthor: String,
+    val content: String,
+)
+data class NotificationContent(
+    val recipientId: Long?,
+    val content: String,
+)
