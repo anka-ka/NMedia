@@ -13,7 +13,9 @@ import java.io.File
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -23,6 +25,7 @@ import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.datatransferobjects.MediaUpload
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.model.PhotoModel
+import javax.inject.Inject
 
 private val empty = Post(
     id = 0,
@@ -36,8 +39,9 @@ private val empty = Post(
 )
 
 
-
-class PostViewModel(
+@HiltViewModel
+@ExperimentalCoroutinesApi
+class PostViewModel @Inject constructor(
     private  val repository: PostRepository,
      appAuth: AppAuth,
 

@@ -1,8 +1,14 @@
 package ru.netology.nmedia.auth
 
+import ru.netology.nmedia.api.PostsApiService
 import android.content.Context
 import androidx.core.content.edit
 import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -10,9 +16,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import ru.netology.nmedia.datatransferobjects.PushToken
 import ru.netology.nmedia.datatransferobjects.Token
-import ru.netology.nmedia.di.DependencyContainer
 
-class AppAuth (context: Context) {
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+
+class AppAuth @Inject constructor(
+    @ApplicationContext
+    private val context: Context) {
 
     private  val ID_KEY = "ID_KEY"
     private  val TOKEN_KEY = "TOKEN_KEY"
@@ -53,12 +65,19 @@ class AppAuth (context: Context) {
         sendPushToken()
     }
 
+    @InstallIn(SingletonComponent::class)
+    @EntryPoint
+    interface AppAuthEntryPoint{
+        fun getApiService(): PostsApiService
+
+    }
+
     fun sendPushToken(token: String? = null) {
         CoroutineScope(Dispatchers.Default).launch {
             val dto = PushToken(token ?: FirebaseMessaging.getInstance().token.await())
-
             try {
-                DependencyContainer.getInstance().apiService.sendPushToken(dto)
+                val entryPoint = EntryPointAccessors.fromApplication(context, AppAuthEntryPoint::class.java)
+                entryPoint.getApiService().sendPushToken(dto)
             } catch (e: Exception) {
 
             }

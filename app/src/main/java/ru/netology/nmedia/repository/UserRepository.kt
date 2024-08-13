@@ -1,6 +1,6 @@
 package ru.netology.nmedia.repository
 
-import PostsApiService
+import ru.netology.nmedia.api.PostsApiService
 import retrofit2.Response
 import ru.netology.nmedia.datatransferobjects.Token
 

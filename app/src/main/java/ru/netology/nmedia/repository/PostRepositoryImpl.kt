@@ -1,6 +1,6 @@
 package ru.netology.nmedia.repository
 
-import PostsApiService
+import ru.netology.nmedia.api.PostsApiService
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -26,16 +26,18 @@ import ru.netology.nmedia.error.ApiError
 import ru.netology.nmedia.error.AppError
 import ru.netology.nmedia.error.AppUnknownError
 import ru.netology.nmedia.error.NetworkError
-import ru.netology.nmedia.model.PhotoModel
 import java.io.IOException
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.time.Duration.Companion.seconds
 
-class PostRepositoryImpl(
+@Singleton
+class PostRepositoryImpl @Inject constructor(
     private val postDao: PostDao,
     private val context: Context,
     private val apiService: PostsApiService,
 
-) : PostRepository {
+    ) : PostRepository {
     override val data: Flow<List<Post>> = postDao.getAllVisible().map{
         it.map(PostEntity::toDto)
     }

@@ -9,25 +9,23 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostViewHolder
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.datatransferobjects.Post
-import ru.netology.nmedia.di.DependencyContainer
 import ru.netology.nmedia.util.StringArg
 import ru.netology.nmedia.viewmodel.PostViewModel
-import ru.netology.nmedia.viewmodel.ViewModelFactory
 
+@AndroidEntryPoint
 class OnePostFragment : Fragment() {
-    private val dependencyContainer = DependencyContainer.getInstance()
+
     companion object {
         var Bundle.textArg: String? by StringArg
     }
     private val viewModel: PostViewModel by activityViewModels(
-        factoryProducer = {
-            ViewModelFactory(dependencyContainer.repository, dependencyContainer.appAuth)
-        }
+
     )
 //    private val viewModel: PostViewModel by viewModels(
 //        ownerProducer = ::requireParentFragment

@@ -1,11 +1,14 @@
 
-import org.jetbrains.kotlin.load.kotlin.makeDeserializationComponentsForJava
+
 
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id ("org.jetbrains.kotlin.kapt")
     id("com.google.gms.google-services")
+    id("com.google.dagger.hilt.android")
+    id ("kotlin-kapt")
+
 }
 
 android {
@@ -48,6 +51,9 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    kapt {
+        correctErrorTypes = true
+    }
 }
 
 dependencies {
@@ -76,7 +82,6 @@ dependencies {
     implementation("com.google.firebase:firebase-vertexai:16.0.0-beta04")
     implementation ("com.github.bumptech.glide:glide:5.0.0-rc01")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-    kapt ("androidx.room:room-compiler:2.6.1")
     implementation ("com.squareup.retrofit2:retrofit:2.11.0")
     implementation ("com.github.dhaval2404:imagepicker:2.1")
     implementation ("com.squareup.retrofit2:converter-gson:2.11.0")
@@ -92,4 +97,6 @@ dependencies {
     implementation ("androidx.appcompat:appcompat:1.7.0")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.0")
     implementation ("com.google.android.gms:play-services-basement:18.4.0")
+    implementation ("com.google.dagger:hilt-android:2.48")
+    kapt ("com.google.dagger:hilt-compiler:2.48")
 }

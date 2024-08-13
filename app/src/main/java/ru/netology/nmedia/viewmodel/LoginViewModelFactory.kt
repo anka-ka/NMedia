@@ -1,9 +1,13 @@
+package ru.netology.nmedia.viewmodel
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import dagger.hilt.android.lifecycle.HiltViewModel
 import ru.netology.nmedia.repository.UserRepository
-import ru.netology.nmedia.viewmodel.LoginViewModel
+import javax.inject.Inject
 
-class LoginViewModelFactory(private val userRepository: UserRepository) :
+
+class LoginViewModelFactory @Inject constructor(private val userRepository: UserRepository) :
     ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
