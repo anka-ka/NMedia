@@ -17,3 +17,4 @@ interface RepositoryModule {
     @Binds
     fun bindsPostRepository(impl: PostRepositoryImpl):PostRepository
 }
+

@@ -20,12 +20,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class LoginAndPasswordFragment : Fragment() {
 
-    private val viewModel: LoginViewModel by viewModels {
-        LoginViewModelFactory(userRepository)
-    }
-
-    @Inject
-    lateinit var userRepository: UserRepository
+    private val viewModel: LoginViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

@@ -2,6 +2,7 @@ package ru.netology.nmedia.repository
 
 import ru.netology.nmedia.api.PostsApiService
 import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -34,8 +35,9 @@ import kotlin.time.Duration.Companion.seconds
 @Singleton
 class PostRepositoryImpl @Inject constructor(
     private val postDao: PostDao,
-    private val context: Context,
     private val apiService: PostsApiService,
+    @ApplicationContext
+    private val context: Context,
 
     ) : PostRepository {
     override val data: Flow<List<Post>> = postDao.getAllVisible().map{

@@ -10,8 +10,9 @@ import ru.netology.nmedia.repository.UserRepository
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(private val userRepository: UserRepository) : ViewModel() {
-
+class LoginViewModel @Inject constructor(
+    private val userRepository: UserRepository
+) : ViewModel() {
     private val _isAuthenticated = MutableLiveData<Boolean>()
     val isAuthenticated: LiveData<Boolean> get() = _isAuthenticated
 
