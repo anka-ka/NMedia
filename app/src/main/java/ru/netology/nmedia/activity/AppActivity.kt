@@ -19,8 +19,10 @@ import androidx.activity.viewModels
 import androidx.core.view.MenuProvider
 import androidx.navigation.findNavController
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.viewmodel.AuthViewModel
+import ru.netology.nmedia.viewmodel.PostViewModel
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -37,7 +39,9 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
 
     private val viewModel: AuthViewModel by viewModels()
+    private val postViewModel: PostViewModel by viewModels()
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,6 +89,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
                         R.id.logout -> {
                             appAuth.clearAuth()
+                            postViewModel.refreshPosts()
                             true
                         }
 

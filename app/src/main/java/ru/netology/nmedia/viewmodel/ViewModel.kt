@@ -5,14 +5,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import ru.netology.nmedia.datatransferobjects.Post
 import ru.netology.nmedia.util.SingleLiveEvent
-import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.PostRepository
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import java.io.File
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -26,6 +25,8 @@ import ru.netology.nmedia.datatransferobjects.MediaUpload
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.model.PhotoModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.*
+import ru.netology.nmedia.api.PostsApiService
 
 private val empty = Post(
     id = 0,
@@ -44,6 +45,7 @@ private val empty = Post(
 class PostViewModel @Inject constructor(
     private  val repository: PostRepository,
      appAuth: AppAuth,
+    private val service: PostsApiService
 
     ) : ViewModel() {
 
@@ -54,28 +56,28 @@ class PostViewModel @Inject constructor(
         get() = _state
 
 
-    val data: LiveData<FeedModel> = appAuth.data
+    val data: Flow<PagingData<Post>> = appAuth.data
         .flatMapLatest { token ->
             val myId = token?.id
 
             repository.data
                 .map { posts ->
-                    FeedModel(
                         posts.map {
-                            it.copy(ownedByMe = it.authorId == myId)
-                        },
-                        empty = posts.isEmpty()
-                    )
+                            it.copy(ownedByMe = it.authorId == myId)}
+
                 }
-        }
-        .asLiveData(Dispatchers.Default)
+        }.flowOn(Dispatchers.Default)
 
 
-    val newerCount: LiveData<Int> = data.switchMap {
-        repository.getNewerCount(it.posts.firstOrNull()?.id ?: 0L)
-            .catch { e -> e.printStackTrace() }
-            .asLiveData(Dispatchers.Default)
-    }
+    val newerCount: Flow<Int> = appAuth.data
+        .flatMapLatest { token ->
+            val postId = token?.id
+            repository.getNewerCount(postId)
+                .catch { e -> e.printStackTrace() }
+
+        }.flowOn(Dispatchers.Default)
+
+
 
     private val noPhoto = PhotoModel()
 
@@ -87,20 +89,28 @@ class PostViewModel @Inject constructor(
     val postError: LiveData<String>
         get() = _postError
 
-    private val _shouldUpdate = MutableLiveData(false)
-    val shouldUpdate: MutableLiveData<Boolean>
+    private val _shouldUpdate = MutableStateFlow(false)
+    val shouldUpdate: StateFlow<Boolean>
         get() = _shouldUpdate
 
-    private val _newPostsAvailable = MutableLiveData<Boolean>()
-    val newPostsAvailable: LiveData<Boolean>
+    private val _newPostsAvailable = MutableStateFlow<Boolean>(false)
+    val newPostsAvailable: StateFlow<Boolean>
         get() = _newPostsAvailable
 
     private val _photo = MutableLiveData(noPhoto)
     val photo: LiveData<PhotoModel>
         get() = _photo
 
+    val pagingData: Flow<PagingData<Post>> = repository.data
 
 
+    init {
+        appAuth.data
+            .onEach { token ->
+                repository.refreshPosts()
+            }
+            .launchIn(viewModelScope)
+    }
 
     init {
         loadPosts()
@@ -208,7 +218,7 @@ class PostViewModel @Inject constructor(
         val lastKnownPostId = repository.getLastPostId()
         val newPostsCount = lastKnownPostId?.let { repository.getNewerCount(it).first() }
         if (newPostsCount != null) {
-            _newPostsAvailable.postValue(newPostsCount > 0)
+            _newPostsAvailable.value = newPostsCount > 0
         }
     }
 
@@ -216,11 +226,14 @@ class PostViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 repository.getAllVisible()
-                _shouldUpdate.postValue(true)
-                _newPostsAvailable.postValue(false)
+                _shouldUpdate.value = true
+                _newPostsAvailable.value = false
             } catch (e: Exception) {
                     _state.postValue(FeedModelState(error = true))
                 }
             }
+    }
+    fun resetShouldUpdate() {
+        _shouldUpdate.value = false
     }
 }

@@ -2,6 +2,9 @@ package ru.netology.nmedia.repository
 
 import ru.netology.nmedia.api.PostsApiService
 import android.content.Context
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -10,7 +13,6 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -40,8 +42,23 @@ class PostRepositoryImpl @Inject constructor(
     private val context: Context,
 
     ) : PostRepository {
-    override val data: Flow<List<Post>> = postDao.getAllVisible().map{
-        it.map(PostEntity::toDto)
+
+    private var pager: Pager<Long, Post>? = null
+
+    override val data: Flow<PagingData<Post>> = Pager(
+        config = PagingConfig(pageSize = 10, enablePlaceholders = false),
+        pagingSourceFactory = {
+            PostPagingSource(
+                apiService
+            )
+        }
+    ).flow
+
+    override fun refreshPosts() {
+        pager = Pager(
+            config = PagingConfig(pageSize = 10, enablePlaceholders = false),
+            pagingSourceFactory = { PostPagingSource(apiService) }
+        )
     }
 
 
@@ -98,15 +115,17 @@ override suspend fun likeById(id: Long) {
     override suspend fun shareById(id: Long) {
         TODO("Not yet implemented")
     }
-    override fun getNewerCount(id: Long): Flow<Int> = flow {
+    override fun getNewerCount(id: Long?): Flow<Int> = flow {
         while (true) {
             delay(10.seconds)
-            val response = apiService.getNewer(id)
-            if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
+            val response = id?.let { apiService.getNewer(it) }
+            if (response != null) {
+                if (!response.isSuccessful) {
+                    throw ApiError(response.code(), response.message())
+                }
             }
 
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            val body = response?.body() ?: throw ApiError(response!!.code(), response.message())
             postDao.insert(body.toEntity(hidden = true))
             emit(body.size)
         }

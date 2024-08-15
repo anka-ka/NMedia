@@ -101,4 +101,6 @@ dependencies {
     kapt ("com.google.dagger:hilt-compiler:2.48")
     implementation("androidx.room:room-runtime:2.6.1")
     kapt ("androidx.room:room-compiler:2.6.1")
+    implementation ("androidx.paging:paging-runtime-ktx:3.3.0")
+    implementation ("androidx.paging:paging-guava:3.1.1")
 }

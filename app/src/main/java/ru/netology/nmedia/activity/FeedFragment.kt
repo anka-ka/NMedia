@@ -9,10 +9,16 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.paging.LoadState
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostAdapter
@@ -24,6 +30,7 @@ import ru.netology.nmedia.viewmodel.PostViewModel
 class FeedFragment : Fragment() {
 
     private val viewModel: PostViewModel by activityViewModels()
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -89,41 +96,74 @@ class FeedFragment : Fragment() {
             onImageClick(imageUrl)
         }
 
+        binding.list.adapter = adapter
+
         binding.refresh.setOnRefreshListener {
             viewModel.refreshPosts()
         }
-        binding.list.adapter = adapter
-        viewModel.data.observe(viewLifecycleOwner) { state ->
-            val newPost = state.posts.size > adapter.currentList.size
-            binding.emptyState.isVisible = state.empty
-            adapter.submitList(state.posts) {
-                if (newPost) {
-                    binding.list.smoothScrollToPosition(0)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.pagingData.collectLatest { pagingData ->
+                adapter.submitData(pagingData)
+                binding.emptyState.isVisible = adapter.itemCount == 0
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.newPostsAvailable.collectLatest { hasNewPosts ->
+                binding.buttonNew.isVisible = hasNewPosts
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.newerCount.collectLatest { count ->
+                binding.buttonNew.isVisible = count > 0
+                binding.buttonNew.setOnClickListener {
+                    viewModel.showAll()
+                    binding.buttonNew.isVisible = false
                 }
             }
         }
-        viewModel.newPostsAvailable.observe(viewLifecycleOwner) { hasNewPosts ->
-            binding.buttonNew.isVisible = hasNewPosts
-        }
-        viewModel.newerCount.observe(viewLifecycleOwner) { count ->
-            binding.buttonNew.isVisible = count > 0
-            binding.buttonNew.setOnClickListener {
-                viewModel.showAll()
-                binding.buttonNew.isVisible = false
+        viewLifecycleOwner.lifecycleScope.launch  {
+            viewModel.data.collectLatest {
+                adapter.submitData(it)
             }
         }
-        viewModel.shouldUpdate.observe(viewLifecycleOwner) { shouldUpdate ->
-            if (shouldUpdate) {
-                viewModel.data.observe(viewLifecycleOwner) { feedModel ->
-                    val newPostCount = feedModel.posts.size
-                    binding.emptyState.isVisible = feedModel.empty
-                    adapter.submitList(feedModel.posts) {
-                        if (newPostCount > 0) {
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                adapter.loadStateFlow.collectLatest { state ->
+                    binding.refresh.isRefreshing =
+                        state.refresh is LoadState.Loading ||
+                                state.prepend is LoadState.Loading ||
+                                state.append is LoadState.Loading
+                }
+            }
+        }
+
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.newerCount.collectLatest { count ->
+                binding.buttonNew.isVisible = count > 0
+                binding.buttonNew.setOnClickListener {
+                    viewModel.showAll()
+                    binding.buttonNew.isVisible = false
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.shouldUpdate.collectLatest { shouldUpdate ->
+                if (shouldUpdate) {
+                    viewModel.pagingData.collectLatest { pagingData ->
+                        adapter.submitData(pagingData)
+                        binding.emptyState.isVisible = adapter.itemCount == 0
+
+                        if (adapter.itemCount > 0) {
                             binding.list.smoothScrollToPosition(0)
                         }
                     }
+                    viewModel.resetShouldUpdate()
                 }
-                viewModel.shouldUpdate.value = false
             }
         }
 
@@ -170,29 +210,3 @@ class FeedFragment : Fragment() {
     }
 }
 
-
-//       viewModel.data.observe(viewLifecycleOwner) { posts ->
-//            val newPost = posts.size > adapter.currentList.size
-//            adapter.submitList(posts) {
-//                if (newPost) binding.list.smoothScrollToPosition(0)
-//            }
-//        }
-//
-//        binding.addNewPost.setOnClickListener {
-//            findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
-//        }
-//
-//        viewModel.edited.observe(viewLifecycleOwner) { post ->
-//            if (post.id == 0L) {
-//                return@observe
-//            }
-//            findNavController().navigate(
-//                R.id.action_feedFragment_to_newPostFragment,
-//                Bundle().apply {
-//                    textArg = post.content
-//                }
-//            )
-//        }
-//        return binding.root
-//    }
-//}
