@@ -24,7 +24,8 @@ import javax.inject.Singleton
 
 class AppAuth @Inject constructor(
     @ApplicationContext
-    private val context: Context) {
+    private val context: Context,
+    private val firebaseMessaging: FirebaseMessaging,) {
 
     private  val ID_KEY = "ID_KEY"
     private  val TOKEN_KEY = "TOKEN_KEY"
@@ -74,7 +75,7 @@ class AppAuth @Inject constructor(
 
     fun sendPushToken(token: String? = null) {
         CoroutineScope(Dispatchers.Default).launch {
-            val dto = PushToken(token ?: FirebaseMessaging.getInstance().token.await())
+            val dto = PushToken(token ?: firebaseMessaging.token.await())
             try {
                 val entryPoint = EntryPointAccessors.fromApplication(context, AppAuthEntryPoint::class.java)
                 entryPoint.getApiService().sendPushToken(dto)

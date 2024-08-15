@@ -29,6 +29,12 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
     @Inject
     lateinit var appAuth: AppAuth
 
+    @Inject
+    lateinit var firebaseMessaging: FirebaseMessaging
+
+    @Inject
+    lateinit var googleApiAvailability: GoogleApiAvailability
+
 
     private val viewModel: AuthViewModel by viewModels()
 
@@ -39,9 +45,9 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
         intent?.let {
             if (it.action != Intent.ACTION_SEND) {
                 return@let
-                }
             }
-            checkGoogleApiAvailability()
+        }
+        checkGoogleApiAvailability()
 
 
         viewModel.authData.observe(this) {
@@ -50,75 +56,75 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
 
         val viewModel by viewModels<AuthViewModel>()
-            addMenuProvider(
-                object : MenuProvider{
-                    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                        menuInflater.inflate(R.menu.auth_menu, menu)
-                        viewModel.authData.observe(this@AppActivity){
-                            val isAuthenticated = viewModel.isAuthenticated
+        addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                    menuInflater.inflate(R.menu.auth_menu, menu)
+                    viewModel.authData.observe(this@AppActivity) {
+                        val isAuthenticated = viewModel.isAuthenticated
 
-                            menu.setGroupVisible(R.id.authenticated, !isAuthenticated)
-                            menu.setGroupVisible(R.id.unauthenticated, isAuthenticated)
-
-                        }
+                        menu.setGroupVisible(R.id.authenticated, !isAuthenticated)
+                        menu.setGroupVisible(R.id.unauthenticated, isAuthenticated)
 
                     }
 
-                    override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
-                        when (menuItem.itemId) {
-                            R.id.sing_in -> {
-                                findNavController(R.id.nav_host_fragment)
-                                    .navigate(R.id.action_appActivity_to_loginAndPasswordFragment)
-                                appAuth.setAuth(5, "x-token")
-                                true
-                            }
-
-                            R.id.sing_up -> {
-                                true
-                            }
-
-                            R.id.logout -> {
-                                appAuth.clearAuth()
-                                true
-                            }
-
-                            else -> false
-                        }
                 }
-            )
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
+                    when (menuItem.itemId) {
+                        R.id.sing_in -> {
+                            findNavController(R.id.nav_host_fragment)
+                                .navigate(R.id.action_appActivity_to_loginAndPasswordFragment)
+                            appAuth.setAuth(5, "x-token")
+                            true
+                        }
+
+                        R.id.sing_up -> {
+                            true
+                        }
+
+                        R.id.logout -> {
+                            appAuth.clearAuth()
+                            true
+                        }
+
+                        else -> false
+                    }
+            }
+        )
     }
 
 
     private fun requestNotificationsPermission() {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                return
-            }
-
-            val permission = Manifest.permission.POST_NOTIFICATIONS
-
-            if (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
-                return
-            }
-
-            requestPermissions(arrayOf(permission), 1)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return
         }
 
-        private fun checkGoogleApiAvailability() {
-            with(GoogleApiAvailability.getInstance()) {
-                val code = isGooglePlayServicesAvailable(this@AppActivity)
-                if (code == ConnectionResult.SUCCESS) {
-                    return@with
-                }
-                if (isUserResolvableError(code)) {
-                    getErrorDialog(this@AppActivity, code, 9000)?.show()
-                    return
-                }
-                Toast.makeText(this@AppActivity, R.string.google_play_unavailable, Toast.LENGTH_LONG)
-                    .show()
-            }
+        val permission = Manifest.permission.POST_NOTIFICATIONS
 
-            FirebaseMessaging.getInstance().token.addOnSuccessListener {
-                println(it)
+        if (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
+            return
+        }
+
+        requestPermissions(arrayOf(permission), 1)
+    }
+
+    private fun checkGoogleApiAvailability() {
+        with(googleApiAvailability) {
+            val code = isGooglePlayServicesAvailable(this@AppActivity)
+            if (code == ConnectionResult.SUCCESS) {
+                return@with
             }
+            if (isUserResolvableError(code)) {
+                getErrorDialog(this@AppActivity, code, 9000)?.show()
+                return
+            }
+            Toast.makeText(this@AppActivity, R.string.google_play_unavailable, Toast.LENGTH_LONG)
+                .show()
+        }
+
+        firebaseMessaging.token.addOnSuccessListener {
+            println(it)
         }
     }
+}
