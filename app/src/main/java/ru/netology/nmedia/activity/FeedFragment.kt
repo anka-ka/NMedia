@@ -98,50 +98,14 @@ class FeedFragment : Fragment() {
 
         binding.list.adapter = adapter
 
-        binding.refresh.setOnRefreshListener {
-            viewModel.refreshPosts()
-        }
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.pagingData.collectLatest { pagingData ->
+            viewModel.data.collectLatest { pagingData ->
                 adapter.submitData(pagingData)
                 binding.emptyState.isVisible = adapter.itemCount == 0
             }
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.newPostsAvailable.collectLatest { hasNewPosts ->
-                binding.buttonNew.isVisible = hasNewPosts
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.newerCount.collectLatest { count ->
-                binding.buttonNew.isVisible = count > 0
-                binding.buttonNew.setOnClickListener {
-                    viewModel.showAll()
-                    binding.buttonNew.isVisible = false
-                }
-            }
-        }
-        viewLifecycleOwner.lifecycleScope.launch  {
-            viewModel.data.collectLatest {
-                adapter.submitData(it)
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                adapter.loadStateFlow.collectLatest { state ->
-                    binding.refresh.isRefreshing =
-                        state.refresh is LoadState.Loading ||
-                                state.prepend is LoadState.Loading ||
-                                state.append is LoadState.Loading
-                }
-            }
-        }
-
-
-        viewLifecycleOwner.lifecycleScope.launch {
             viewModel.newerCount.collectLatest { count ->
                 binding.buttonNew.isVisible = count > 0
                 binding.buttonNew.setOnClickListener {
@@ -152,45 +116,13 @@ class FeedFragment : Fragment() {
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.shouldUpdate.collectLatest { shouldUpdate ->
-                if (shouldUpdate) {
-                    viewModel.pagingData.collectLatest { pagingData ->
-                        adapter.submitData(pagingData)
-                        binding.emptyState.isVisible = adapter.itemCount == 0
-
-                        if (adapter.itemCount > 0) {
-                            binding.list.smoothScrollToPosition(0)
-                        }
-                    }
-                    viewModel.resetShouldUpdate()
-                }
+            adapter.loadStateFlow.collectLatest { state ->
+                binding.refresh.isRefreshing = state.refresh is LoadState.Loading
             }
         }
 
-        viewModel.state.observe(viewLifecycleOwner) { state ->
-            if (state.error) {
-                Snackbar.make(
-                    binding.root,
-                    R.string.error_loading,
-                    Snackbar.LENGTH_SHORT
-                )
-                    .setAction(R.string.retry_loading) {
-                        viewModel.loadPosts()
-                    }
-                    .show()
-            }
-            binding.progress.isVisible = state.loading
-            binding.refresh.isRefreshing = state.refreshing
-        }
-
-        viewModel.postError.observe(viewLifecycleOwner) { error ->
-            Snackbar.make(
-                requireView(),
-                error,
-                Snackbar.LENGTH_LONG
-            ).setAction(R.string.retry_loading) {
-                viewModel.loadPosts()
-            }.show()
+        binding.refresh.setOnRefreshListener {
+            adapter.refresh()
         }
 
         binding.addNewPost.setOnClickListener {
@@ -209,4 +141,3 @@ class FeedFragment : Fragment() {
         )
     }
 }
-

@@ -43,7 +43,6 @@ class PostRepositoryImpl @Inject constructor(
 
     ) : PostRepository {
 
-    private var pager: Pager<Long, Post>? = null
 
     override val data: Flow<PagingData<Post>> = Pager(
         config = PagingConfig(pageSize = 10, enablePlaceholders = false),
@@ -54,30 +53,24 @@ class PostRepositoryImpl @Inject constructor(
         }
     ).flow
 
-    override fun refreshPosts() {
-        pager = Pager(
-            config = PagingConfig(pageSize = 10, enablePlaceholders = false),
-            pagingSourceFactory = { PostPagingSource(apiService) }
-        )
-    }
 
 
-    override suspend fun getAll() {
-        val response = apiService.getAll()
-        if (!response.isSuccessful) {
-            throw RuntimeException(
-                context.getString(
-                    R.string.post_error
-                )
-            )
-        }
-        val posts = response.body() ?: throw RuntimeException(
-            context.getString(
-                R.string.response_error
-            )
-        )
-        postDao.insert(posts.map(PostEntity::fromDto))
-    }
+//    override suspend fun getAll() {
+//        val response = apiService.getAll()
+//        if (!response.isSuccessful) {
+//            throw RuntimeException(
+//                context.getString(
+//                    R.string.post_error
+//                )
+//            )
+//        }
+//        val posts = response.body() ?: throw RuntimeException(
+//            context.getString(
+//                R.string.response_error
+//            )
+//        )
+//        postDao.insert(posts.map(PostEntity::fromDto))
+//    }
 
 override suspend fun likeById(id: Long) {
 
@@ -118,20 +111,24 @@ override suspend fun likeById(id: Long) {
     override fun getNewerCount(id: Long?): Flow<Int> = flow {
         while (true) {
             delay(10.seconds)
-            val response = id?.let { apiService.getNewer(it) }
+
+            val response = id?.let { apiService.getNewerCount(it) }
             if (response != null) {
                 if (!response.isSuccessful) {
                     throw ApiError(response.code(), response.message())
                 }
-            }
 
-            val body = response?.body() ?: throw ApiError(response!!.code(), response.message())
-            postDao.insert(body.toEntity(hidden = true))
-            emit(body.size)
+                val count = response.body() ?: throw ApiError(response.code(), response.message())
+                emit(count)
+            } else {
+                emit(0)
+            }
         }
     }
-        .catch { e -> throw AppError.from(e) }
-        .flowOn(Dispatchers.Default)
+        .catch { e ->
+            throw AppError.from(e)
+        }
+        .flowOn(Dispatchers.IO)
 
     override fun getHiddenCount(): Flow<Int> {
         return postDao.getHiddenCount()

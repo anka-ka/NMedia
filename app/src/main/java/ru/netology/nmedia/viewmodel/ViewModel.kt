@@ -50,7 +50,6 @@ class PostViewModel @Inject constructor(
     ) : ViewModel() {
 
 
-
     private val _state = MutableLiveData<FeedModelState>()
     val state: LiveData<FeedModelState>
         get() = _state
@@ -58,23 +57,15 @@ class PostViewModel @Inject constructor(
 
     val data: Flow<PagingData<Post>> = appAuth.data
         .flatMapLatest { token ->
-            val myId = token?.id
-
-            repository.data
-                .map { posts ->
-                        posts.map {
-                            it.copy(ownedByMe = it.authorId == myId)}
-
-                }
+            repository.data.map { posts ->
+                posts.map { it.copy(ownedByMe = it.authorId == token?.id) }
+            }
         }.flowOn(Dispatchers.Default)
 
 
     val newerCount: Flow<Int> = appAuth.data
         .flatMapLatest { token ->
-            val postId = token?.id
-            repository.getNewerCount(postId)
-                .catch { e -> e.printStackTrace() }
-
+            repository.getNewerCount(token?.id ?: 0L)
         }.flowOn(Dispatchers.Default)
 
 
@@ -101,47 +92,33 @@ class PostViewModel @Inject constructor(
     val photo: LiveData<PhotoModel>
         get() = _photo
 
-    val pagingData: Flow<PagingData<Post>> = repository.data
-
 
     init {
-        appAuth.data
-            .onEach { token ->
-                repository.refreshPosts()
-            }
-            .launchIn(viewModelScope)
+        showAllPosts()
     }
 
-    init {
-        loadPosts()
+//    fun loadPosts() {
+//        viewModelScope.launch {
+//            _state.postValue(FeedModelState(loading = true))
+//            try {
+//                repository.getAll()
+//                _state.value = FeedModelState()
+//                checkForNewPosts()
+//            } catch (e: Exception) {
+//                _state.value = FeedModelState(error = true)
+//            }
+//        }
+//    }
+fun showAllPosts() {
+    viewModelScope.launch {
+        repository.showAll()
     }
+}
 
-    fun loadPosts() {
-        viewModelScope.launch {
-            _state.postValue(FeedModelState(loading = true))
-            try {
-                repository.getAll()
-                _state.value = FeedModelState()
-                checkForNewPosts()
-            } catch (e: Exception) {
-                _state.value = FeedModelState(error = true)
-            }
-        }
-    }
     fun setPhoto(uri: Uri, file: File) {
         _photo.value = PhotoModel(uri, file)
     }
-    fun refreshPosts() {
-        viewModelScope.launch {
-            _state.postValue(FeedModelState(refreshing = true))
-            _state.value = try {
-                repository.getAllVisible()
-                FeedModelState()
-            } catch (e: Exception) {
-                FeedModelState(error = true)
-            }
-        }
-    }
+
     val edited = MutableLiveData(empty)
 
     fun changeContentAndSave(content: String) {
