@@ -1,5 +1,5 @@
 package ru.netology.nmedia.adapter
-import BASE_URL
+
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,7 +16,7 @@ import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.datatransferobjects.AttachmentType
 import ru.netology.nmedia.datatransferobjects.Post
-import ru.netology.nmedia.repository.PostRepositoryImpl
+
 
 interface OnInteractionListener{
     fun onLike(post: Post)

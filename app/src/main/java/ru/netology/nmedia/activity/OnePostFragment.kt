@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostViewHolder
@@ -17,11 +18,15 @@ import ru.netology.nmedia.datatransferobjects.Post
 import ru.netology.nmedia.util.StringArg
 import ru.netology.nmedia.viewmodel.PostViewModel
 
+@AndroidEntryPoint
 class OnePostFragment : Fragment() {
+
     companion object {
         var Bundle.textArg: String? by StringArg
     }
-    private val viewModel: PostViewModel by activityViewModels()
+    private val viewModel: PostViewModel by activityViewModels(
+
+    )
 //    private val viewModel: PostViewModel by viewModels(
 //        ownerProducer = ::requireParentFragment
 //    )

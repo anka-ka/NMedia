@@ -8,8 +8,9 @@ import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import ru.netology.nmedia.databinding.FragmentImageFullScreenBinding
 import androidx.navigation.fragment.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
-
+@AndroidEntryPoint
 class ImageFullScreenFragment : Fragment() {
 
     override fun onCreateView(

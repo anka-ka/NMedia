@@ -1,21 +1,21 @@
 package ru.netology.nmedia.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import ru.netology.nmedia.datatransferobjects.Post
-import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.util.SingleLiveEvent
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.PostRepository
-import ru.netology.nmedia.repository.PostRepositoryImpl
 import android.net.Uri
+import androidx.lifecycle.ViewModel
 import java.io.File
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -25,6 +25,7 @@ import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.datatransferobjects.MediaUpload
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.model.PhotoModel
+import javax.inject.Inject
 
 private val empty = Post(
     id = 0,
@@ -38,12 +39,14 @@ private val empty = Post(
 )
 
 
+@HiltViewModel
+@ExperimentalCoroutinesApi
+class PostViewModel @Inject constructor(
+    private  val repository: PostRepository,
+     appAuth: AppAuth,
 
-class PostViewModel(application: Application) : AndroidViewModel(application) {
+    ) : ViewModel() {
 
-    private val repository: PostRepository = with(AppDb.getInstance(context = application)) {
-        PostRepositoryImpl(postDao(), application)
-    }
 
 
     private val _state = MutableLiveData<FeedModelState>()
@@ -51,7 +54,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         get() = _state
 
 
-    val data: LiveData<FeedModel> = AppAuth.getInstance().data
+    val data: LiveData<FeedModel> = appAuth.data
         .flatMapLatest { token ->
             val myId = token?.id
 

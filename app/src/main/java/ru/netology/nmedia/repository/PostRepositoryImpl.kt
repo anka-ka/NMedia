@@ -1,7 +1,8 @@
 package ru.netology.nmedia.repository
 
-import ApiService
+import ru.netology.nmedia.api.PostsApiService
 import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -26,21 +27,26 @@ import ru.netology.nmedia.error.ApiError
 import ru.netology.nmedia.error.AppError
 import ru.netology.nmedia.error.AppUnknownError
 import ru.netology.nmedia.error.NetworkError
-import ru.netology.nmedia.model.PhotoModel
 import java.io.IOException
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.time.Duration.Companion.seconds
 
-class PostRepositoryImpl(
+@Singleton
+class PostRepositoryImpl @Inject constructor(
     private val postDao: PostDao,
-    private val context: Context
-) : PostRepository {
+    private val apiService: PostsApiService,
+    @ApplicationContext
+    private val context: Context,
+
+    ) : PostRepository {
     override val data: Flow<List<Post>> = postDao.getAllVisible().map{
         it.map(PostEntity::toDto)
     }
 
 
     override suspend fun getAll() {
-        val response = ApiService.service.getAll()
+        val response = apiService.getAll()
         if (!response.isSuccessful) {
             throw RuntimeException(
                 context.getString(
@@ -64,9 +70,9 @@ override suspend fun likeById(id: Long) {
     try {
         val response = withContext(Dispatchers.IO) {
             if (post.likedByMe) {
-                ApiService.service.dislikeById(id)
+                apiService.dislikeById(id)
             } else {
-                ApiService.service.likeById(id)
+                apiService.likeById(id)
             }
         }
 
@@ -95,7 +101,7 @@ override suspend fun likeById(id: Long) {
     override fun getNewerCount(id: Long): Flow<Int> = flow {
         while (true) {
             delay(10.seconds)
-            val response = ApiService.service.getNewer(id)
+            val response = apiService.getNewer(id)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -114,7 +120,7 @@ override suspend fun likeById(id: Long) {
 
     override suspend fun getAllVisible() {
         try {
-            val response = ApiService.service.getAll()
+            val response = apiService.getAll()
             if (!response.isSuccessful) {
                 throw RuntimeException(
                     context.getString(
@@ -134,7 +140,7 @@ override suspend fun likeById(id: Long) {
 
     override suspend fun save(post: Post) {
         try {
-            val response = ApiService.service.save(post)
+            val response = apiService.save(post)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -162,7 +168,7 @@ override suspend fun likeById(id: Long) {
 
     private suspend fun upload(photo: MediaUpload): Media {
         val file = photo.file ?: throw IllegalArgumentException("Photo file is missing")
-        val response = ApiService.service.upload(
+        val response = apiService.upload(
             MultipartBody.Part.createFormData("file", file.name, file.asRequestBody())
         )
         if (!response.isSuccessful) {
@@ -176,7 +182,7 @@ override suspend fun likeById(id: Long) {
     postDao.removeById(id)
 
     try {
-        val response = ApiService.service.removeById(id)
+        val response = apiService.removeById(id)
         if (!response.isSuccessful) {
             if (postEntity != null) {
                 postDao.insert(postEntity)

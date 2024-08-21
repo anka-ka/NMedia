@@ -15,16 +15,23 @@ import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
+import kotlin.random.Random
 import ru.netology.nmedia.activity.AppActivity
 import ru.netology.nmedia.auth.AppAuth
+import javax.inject.Inject
 
-import kotlin.random.Random
+@AndroidEntryPoint
+
 class FCMService : FirebaseMessagingService() {
     private val action = "action"
     private val content = "content"
     private val channelId = "remote"
     private val gson = Gson()
+
+    @Inject
+    lateinit var appAuth: AppAuth
 
     override fun onCreate() {
         super.onCreate()
@@ -47,7 +54,7 @@ class FCMService : FirebaseMessagingService() {
             gson.fromJson(it, NotificationContent::class.java)
         }
         val recipientId = contentObject?.recipientId
-        val currentRecipientId = AppAuth.getInstance().data.value?.id?: 0L
+        val currentRecipientId = appAuth.data.value?.id?: 0L
 
         when {
             recipientId == null -> {
@@ -60,11 +67,11 @@ class FCMService : FirebaseMessagingService() {
             }
             recipientId == 0L -> {
                 Log.i("FCMService", "Anonymous authentication detected. Resending push token.")
-                AppAuth.getInstance().sendPushToken()
+                appAuth.sendPushToken()
             }
             recipientId != 0L && recipientId != currentRecipientId -> {
                 Log.i("FCMService", "Different authentication detected. Resending push token.")
-                AppAuth.getInstance().sendPushToken()
+                appAuth.sendPushToken()
             }
         }
     }
@@ -92,7 +99,7 @@ class FCMService : FirebaseMessagingService() {
     }
 
     override fun onNewToken(token: String) {
-        AppAuth.getInstance().sendPushToken(token)
+        appAuth.sendPushToken(token)
     }
 
     private fun handleLike(content: Like) {
