@@ -89,6 +89,7 @@ dependencies {
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
     implementation("com.github.javafaker:javafaker:1.0.2")
     implementation("androidx.room:room-ktx:2.6.1")
+    implementation("androidx.paging:paging-common-android:3.3.2")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")

@@ -15,7 +15,7 @@ import ru.netology.nmedia.datatransferobjects.Media
 import ru.netology.nmedia.datatransferobjects.Post
 import ru.netology.nmedia.datatransferobjects.PushToken
 import ru.netology.nmedia.datatransferobjects.Token
-
+import ru.netology.nmedia.model.NewerCount
 
 
 interface PostsApiService {
@@ -29,7 +29,7 @@ interface PostsApiService {
     suspend fun getById(@Path("id") id: Long): Response<Post>
 
     @GET("posts/{id}/newer-count")
-    suspend fun getNewerCount(@Path("id") id: Long): Response<Int>
+    suspend fun getNewerCount(@Path("id") id: Long): Response<NewerCount>
 
     @GET("posts/{id}/before")
     suspend fun getBefore(@Path("id") id: Long, @Query("count") count: Int): Response<List<Post>>

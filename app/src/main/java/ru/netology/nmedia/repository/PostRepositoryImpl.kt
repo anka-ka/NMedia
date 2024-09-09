@@ -2,6 +2,7 @@ package ru.netology.nmedia.repository
 
 import ru.netology.nmedia.api.PostsApiService
 import android.content.Context
+import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -52,6 +53,7 @@ class PostRepositoryImpl @Inject constructor(
             )
         }
     ).flow
+
 
 
 
@@ -118,17 +120,15 @@ override suspend fun likeById(id: Long) {
                     throw ApiError(response.code(), response.message())
                 }
 
-                val count = response.body() ?: throw ApiError(response.code(), response.message())
-                emit(count)
+                val newerCount = response.body() ?: throw ApiError(response.code(), response.message())
+                emit(newerCount.count.toInt())
             } else {
                 emit(0)
             }
         }
-    }
-        .catch { e ->
-            throw AppError.from(e)
-        }
-        .flowOn(Dispatchers.IO)
+    }.catch { e ->
+        throw AppError.from(e)
+    }.flowOn(Dispatchers.IO)
 
     override fun getHiddenCount(): Flow<Int> {
         return postDao.getHiddenCount()
