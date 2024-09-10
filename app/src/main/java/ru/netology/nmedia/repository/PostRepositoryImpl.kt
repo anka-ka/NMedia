@@ -122,6 +122,7 @@ override suspend fun likeById(id: Long) {
 
                 val newerCount = response.body() ?: throw ApiError(response.code(), response.message())
                 emit(newerCount.count.toInt())
+
             } else {
                 emit(0)
             }
