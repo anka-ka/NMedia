@@ -24,11 +24,13 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import ru.netology.nmedia.R
 import ru.netology.nmedia.dao.PostDao
+import ru.netology.nmedia.dao.PostRemoteKeyDao
 import ru.netology.nmedia.datatransferobjects.Attachment
 import ru.netology.nmedia.datatransferobjects.AttachmentType
 import ru.netology.nmedia.datatransferobjects.Media
 import ru.netology.nmedia.datatransferobjects.MediaUpload
 import ru.netology.nmedia.datatransferobjects.Post
+import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.entity.toEntity
 import ru.netology.nmedia.error.ApiError
@@ -44,6 +46,8 @@ import kotlin.time.Duration.Companion.seconds
 class PostRepositoryImpl @Inject constructor(
     private val postDao: PostDao,
     private val apiService: PostsApiService,
+    postRemoteKeyDao: PostRemoteKeyDao,
+    appDb: AppDb,
     @ApplicationContext
     private val context: Context,
 
@@ -53,8 +57,15 @@ class PostRepositoryImpl @Inject constructor(
     override val data: Flow<PagingData<Post>> = Pager(
         config = PagingConfig(pageSize = 10, enablePlaceholders = false),
         pagingSourceFactory = {
-           postDao.getPagingSource()},
-        remoteMediator = PostRemoteMediator(service = apiService, postDao = postDao)
+            postDao.getPagingSource()
+        },
+        remoteMediator = PostRemoteMediator(
+            service = apiService,
+            postDao = postDao,
+            postRemoteKeyDao = postRemoteKeyDao,
+            appDb = appDb,
+
+            )
     ).flow
         .map { it.map (PostEntity::toDto) }
 
