@@ -6,6 +6,7 @@ import androidx.paging.LoadType
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
+import kotlinx.coroutines.flow.firstOrNull
 import ru.netology.nmedia.api.PostsApiService
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dao.PostRemoteKeyDao
@@ -28,10 +29,16 @@ class PostRemoteMediator (
 
         try {
             val response = when (loadType) {
-                LoadType.REFRESH -> service.getLatest(state.config.pageSize)
+                LoadType.REFRESH -> {
+                    val latestId = postDao.getLastPostId().firstOrNull()
+                    if (latestId != null) {
+                        service.getAfter(latestId, state.config.pageSize)
+                    } else {
+                        service.getLatest(state.config.pageSize)
+                    }
+                }
                 LoadType.PREPEND -> {
-                    val id = postRemoteKeyDao.max()?: return  MediatorResult.Success(false)
-                    service.getAfter(id, state.config.pageSize)
+                    return MediatorResult.Success(endOfPaginationReached = true)
                 }
                 LoadType.APPEND -> {
                     val id = postRemoteKeyDao.min() ?: return  MediatorResult.Success(false)
@@ -50,7 +57,11 @@ class PostRemoteMediator (
 
                 when (loadType) {
                     LoadType.REFRESH -> {
-                        postDao.clear()
+                        val latestId = postDao.getLastPostId().firstOrNull()
+                        if (latestId == null) {
+                            postDao.clear()
+                        }
+
                         postRemoteKeyDao.insert(
                             listOf(
                                 PostRemoteKeyEntity(
@@ -64,7 +75,6 @@ class PostRemoteMediator (
                             )
                         )
                     }
-
                     LoadType.PREPEND -> {
                         postRemoteKeyDao.insert(
                             PostRemoteKeyEntity(
