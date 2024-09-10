@@ -1,11 +1,15 @@
+@file:OptIn(ExperimentalPagingApi::class)
+
 package ru.netology.nmedia.repository
 
 import ru.netology.nmedia.api.PostsApiService
 import android.content.Context
 import android.util.Log
+import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.map
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -14,6 +18,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -48,11 +53,10 @@ class PostRepositoryImpl @Inject constructor(
     override val data: Flow<PagingData<Post>> = Pager(
         config = PagingConfig(pageSize = 10, enablePlaceholders = false),
         pagingSourceFactory = {
-            PostPagingSource(
-                apiService
-            )
-        }
+           postDao.getPagingSource()},
+        remoteMediator = PostRemoteMediator(service = apiService, postDao = postDao)
     ).flow
+        .map { it.map (PostEntity::toDto) }
 
 
 
