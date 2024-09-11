@@ -105,6 +105,11 @@ class FeedFragment : Fragment() {
                 adapter.retry()
             }
         )
+        lifecycleScope.launch {
+            adapter.loadStateFlow.collect { loadStates ->
+                binding.progress.isVisible = loadStates.refresh is LoadState.Loading
+            }
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.data.collectLatest { pagingData ->
