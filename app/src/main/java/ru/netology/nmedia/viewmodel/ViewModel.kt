@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModel
 import java.io.File
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import androidx.paging.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +28,7 @@ import ru.netology.nmedia.model.PhotoModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.*
 import ru.netology.nmedia.api.PostsApiService
+import ru.netology.nmedia.datatransferobjects.FeedItem
 
 private val empty = Post(
     id = 0,
@@ -48,6 +50,9 @@ class PostViewModel @Inject constructor(
     private val service: PostsApiService
 
     ) : ViewModel() {
+        private  val cached = repository
+            .data
+            .cachedIn(viewModelScope)
 
 
     private val _state = MutableLiveData<FeedModelState>()
@@ -55,12 +60,18 @@ class PostViewModel @Inject constructor(
         get() = _state
 
 
-    val data: Flow<PagingData<Post>> = appAuth.data
-        .flatMapLatest { token ->
-            repository.data.map { posts ->
-                posts.map { it.copy(ownedByMe = it.authorId == token?.id) }
+    val data: Flow<PagingData<FeedItem>> = appAuth.data
+        .flatMapLatest { authData ->
+            cached.map { pagingData ->
+                pagingData.map { feedItem ->
+                    if (feedItem is Post) {
+                        feedItem.copy(ownedByMe = feedItem.authorId == authData?.id)
+                    } else {
+                        feedItem
+                    }
+                }
             }
-        }.flowOn(Dispatchers.Default)
+        }
 
 
     val newerCount: Flow<Int> = appAuth.data

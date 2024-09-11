@@ -9,6 +9,7 @@ import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.insertSeparators
 import androidx.paging.map
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -25,8 +26,10 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import ru.netology.nmedia.R
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dao.PostRemoteKeyDao
+import ru.netology.nmedia.datatransferobjects.Ad
 import ru.netology.nmedia.datatransferobjects.Attachment
 import ru.netology.nmedia.datatransferobjects.AttachmentType
+import ru.netology.nmedia.datatransferobjects.FeedItem
 import ru.netology.nmedia.datatransferobjects.Media
 import ru.netology.nmedia.datatransferobjects.MediaUpload
 import ru.netology.nmedia.datatransferobjects.Post
@@ -40,6 +43,7 @@ import ru.netology.nmedia.error.NetworkError
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
 @Singleton
@@ -54,7 +58,7 @@ class PostRepositoryImpl @Inject constructor(
     ) : PostRepository {
 
 
-    override val data: Flow<PagingData<Post>> = Pager(
+    override val data: Flow<PagingData<FeedItem>> = Pager(
         config = PagingConfig(pageSize = 10, enablePlaceholders = false),
         pagingSourceFactory = {
             postDao.getPagingSource()
@@ -66,8 +70,16 @@ class PostRepositoryImpl @Inject constructor(
             appDb = appDb,
 
             )
-    ).flow
-        .map { it.map (PostEntity::toDto) }
+    ).flow.map { pagingData ->
+        pagingData.map(PostEntity::toDto)
+            .insertSeparators { previous, _ ->
+                if (previous?.id?.rem(5) == 0L) {
+                    Ad(Random.nextLong(), "figma.jpg")
+                } else {
+                    null
+                }
+            }
+    }
 
 
 
