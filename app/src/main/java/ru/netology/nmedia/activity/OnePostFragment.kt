@@ -8,11 +8,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnInteractionListener
-import ru.netology.nmedia.adapter.PostViewHolder
+import ru.netology.nmedia.adapter.PostAdapter
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.datatransferobjects.Post
 import ru.netology.nmedia.util.StringArg
@@ -24,13 +28,14 @@ class OnePostFragment : Fragment() {
     companion object {
         var Bundle.textArg: String? by StringArg
     }
+
     private val viewModel: PostViewModel by activityViewModels(
 
     )
-//    private val viewModel: PostViewModel by viewModels(
-//        ownerProducer = ::requireParentFragment
-//    )
 
+    private lateinit var adapter: PostAdapter
+
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -41,53 +46,61 @@ class OnePostFragment : Fragment() {
             container,
             false
         )
-        viewModel.data.observe(viewLifecycleOwner) { model ->
-            val post = model.posts.find { it.id == arguments?.textArg?.toLong() } ?: return@observe
 
-            val onInteractionListener = object : OnInteractionListener {
-                override fun onEdit(post: Post) {
-                    findNavController().navigate(
-                        R.id.action_onePostFragment_to_newPostFragment,
-                        Bundle().apply {
-                            textArg = post.content
+        if (adapter == null) {
+            adapter = PostAdapter(
+                onInteractionListener = object : OnInteractionListener {
+                    override fun onEdit(post: Post) {
+                        findNavController().navigate(
+                            R.id.action_onePostFragment_to_newPostFragment,
+                            Bundle().apply {
+                                textArg = post.content
+                            }
+                        )
+                        viewModel.edit(post)
+                    }
+
+                    override fun onRemove(post: Post) {
+                        findNavController().navigateUp()
+                        viewModel.removeById(post.id)
+                    }
+
+                    override fun onLike(post: Post) {
+                        viewModel.likeById(post.id)
+                    }
+
+                    override fun onShare(post: Post) {
+                        val intent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, post.content)
                         }
-                    )
-                    viewModel.edit(post)
-                }
-
-                override fun onRemove(post: Post) {
-                    findNavController().navigateUp()
-                    viewModel.removeById(post.id)
-                }
-
-                override fun onLike(post: Post) {
-                    viewModel.likeById(post.id)
-                }
-
-                override fun onShare(post: Post) {
-                    val intent = Intent().apply {
-                        action = Intent.ACTION_SEND
-                        type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, post.content)
+                        val shareIntent = Intent.createChooser(intent, getString(R.string.chooser_share_post))
+                        startActivity(shareIntent)
                     }
-                    val shareIntent = Intent.createChooser(intent, getString(R.string.chooser_share_post))
-                    startActivity(shareIntent)
-                }
 
-                override fun onPlayVideo(post: Post) {
-                    val intent = Intent().apply {
-                        action = Intent.ACTION_VIEW
-                        data = Uri.parse(post.videoLink)
+                    override fun onPlayVideo(post: Post) {
+                        val intent = Intent().apply {
+                            action = Intent.ACTION_VIEW
+                            data = Uri.parse(post.videoLink)
+                        }
+                        val playVideoIntent = Intent.createChooser(intent, "video")
+                        startActivity(playVideoIntent)
                     }
-                    val playVideoIntent = Intent.createChooser(intent, "video")
-                    startActivity(playVideoIntent)
-                }
 
-                override fun onOpenOnePost(post: Post) {
+                    override fun onOpenOnePost(post: Post) {
+                    }
 
-                }
-
-                override fun onImageClick(imageUrl: String) {
+                    override fun onImageClick(imageUrl: String) {
+                        findNavController().navigate(
+                            R.id.action_onePostFragment_to_imageFullScreenFragment,
+                            Bundle().apply {
+                                putString("imageUrl", imageUrl)
+                            }
+                        )
+                    }
+                },
+                        onImageClick = { imageUrl ->
                     findNavController().navigate(
                         R.id.action_onePostFragment_to_imageFullScreenFragment,
                         Bundle().apply {
@@ -95,10 +108,18 @@ class OnePostFragment : Fragment() {
                         }
                     )
                 }
-            }
+            )
+        }
 
-            val viewHolder = PostViewHolder(binding, onInteractionListener::onImageClick, onInteractionListener)
-            viewHolder.bind(post)
+        binding.postCard.adapter = adapter
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.data.collectLatest { pagingData ->
+                adapter?.submitData(pagingData)
+
+                val postId = arguments?.textArg?.toLongOrNull()
+                val post = adapter?.snapshot()?.items?.find { it.id == postId }
+            }
         }
 
         return binding.root

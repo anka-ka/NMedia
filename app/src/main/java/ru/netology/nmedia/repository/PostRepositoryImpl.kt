@@ -2,6 +2,10 @@ package ru.netology.nmedia.repository
 
 import ru.netology.nmedia.api.PostsApiService
 import android.content.Context
+import android.util.Log
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -10,7 +14,6 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -40,27 +43,36 @@ class PostRepositoryImpl @Inject constructor(
     private val context: Context,
 
     ) : PostRepository {
-    override val data: Flow<List<Post>> = postDao.getAllVisible().map{
-        it.map(PostEntity::toDto)
-    }
 
 
-    override suspend fun getAll() {
-        val response = apiService.getAll()
-        if (!response.isSuccessful) {
-            throw RuntimeException(
-                context.getString(
-                    R.string.post_error
-                )
+    override val data: Flow<PagingData<Post>> = Pager(
+        config = PagingConfig(pageSize = 10, enablePlaceholders = false),
+        pagingSourceFactory = {
+            PostPagingSource(
+                apiService
             )
         }
-        val posts = response.body() ?: throw RuntimeException(
-            context.getString(
-                R.string.response_error
-            )
-        )
-        postDao.insert(posts.map(PostEntity::fromDto))
-    }
+    ).flow
+
+
+
+
+//    override suspend fun getAll() {
+//        val response = apiService.getAll()
+//        if (!response.isSuccessful) {
+//            throw RuntimeException(
+//                context.getString(
+//                    R.string.post_error
+//                )
+//            )
+//        }
+//        val posts = response.body() ?: throw RuntimeException(
+//            context.getString(
+//                R.string.response_error
+//            )
+//        )
+//        postDao.insert(posts.map(PostEntity::fromDto))
+//    }
 
 override suspend fun likeById(id: Long) {
 
@@ -98,21 +110,26 @@ override suspend fun likeById(id: Long) {
     override suspend fun shareById(id: Long) {
         TODO("Not yet implemented")
     }
-    override fun getNewerCount(id: Long): Flow<Int> = flow {
+    override fun getNewerCount(id: Long?): Flow<Int> = flow {
         while (true) {
             delay(10.seconds)
-            val response = apiService.getNewer(id)
-            if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
-            }
 
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
-            postDao.insert(body.toEntity(hidden = true))
-            emit(body.size)
+            val response = id?.let { apiService.getNewerCount(it) }
+            if (response != null) {
+                if (!response.isSuccessful) {
+                    throw ApiError(response.code(), response.message())
+                }
+
+                val newerCount = response.body() ?: throw ApiError(response.code(), response.message())
+                emit(newerCount.count.toInt())
+
+            } else {
+                emit(0)
+            }
         }
-    }
-        .catch { e -> throw AppError.from(e) }
-        .flowOn(Dispatchers.Default)
+    }.catch { e ->
+        throw AppError.from(e)
+    }.flowOn(Dispatchers.IO)
 
     override fun getHiddenCount(): Flow<Int> {
         return postDao.getHiddenCount()
