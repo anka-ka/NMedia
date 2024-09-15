@@ -57,11 +57,6 @@ class PostRemoteMediator (
 
                 when (loadType) {
                     LoadType.REFRESH -> {
-                        val latestId = postDao.getLastPostId().firstOrNull()
-                        if (latestId == null) {
-                            postDao.clear()
-                        }
-
                         postRemoteKeyDao.insert(
                             listOf(
                                 PostRemoteKeyEntity(
