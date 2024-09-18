@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostAdapter
+import ru.netology.nmedia.adapter.PostLoadingStateAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.datatransferobjects.Post
 import ru.netology.nmedia.viewmodel.PostViewModel
@@ -96,7 +97,19 @@ class FeedFragment : Fragment() {
             onImageClick(imageUrl)
         }
 
-        binding.list.adapter = adapter
+        binding.list.adapter = adapter.withLoadStateHeaderAndFooter(
+            header = PostLoadingStateAdapter{
+                adapter.retry()
+            },
+            footer = PostLoadingStateAdapter{
+                adapter.retry()
+            }
+        )
+        lifecycleScope.launch {
+            adapter.loadStateFlow.collect { loadStates ->
+                binding.progress.isVisible = loadStates.refresh is LoadState.Loading
+            }
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.data.collectLatest { pagingData ->

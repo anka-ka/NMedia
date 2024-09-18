@@ -1,7 +1,11 @@
 package ru.netology.nmedia.datatransferobjects
 
+sealed interface FeedItem{
+    val id: Long
+}
+
 data class Post(
-    val id: Long=0,
+    override val id: Long=0,
     val author: String= "",
     var content: String= "",
     val authorId: Long,
@@ -13,7 +17,12 @@ data class Post(
     val authorAvatar: String = "",
     val attachment: Attachment? = null,
     val ownedByMe: Boolean = false,
-)
+): FeedItem
+
+data class Ad(
+    override val id: Long,
+    val image: String,
+):FeedItem
 
 data class Attachment(
     val url: String,

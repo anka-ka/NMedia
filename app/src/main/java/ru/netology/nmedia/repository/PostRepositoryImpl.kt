@@ -1,11 +1,16 @@
+@file:OptIn(ExperimentalPagingApi::class)
+
 package ru.netology.nmedia.repository
 
 import ru.netology.nmedia.api.PostsApiService
 import android.content.Context
 import android.util.Log
+import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.insertSeparators
+import androidx.paging.map
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -14,16 +19,21 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import ru.netology.nmedia.R
 import ru.netology.nmedia.dao.PostDao
+import ru.netology.nmedia.dao.PostRemoteKeyDao
+import ru.netology.nmedia.datatransferobjects.Ad
 import ru.netology.nmedia.datatransferobjects.Attachment
 import ru.netology.nmedia.datatransferobjects.AttachmentType
+import ru.netology.nmedia.datatransferobjects.FeedItem
 import ru.netology.nmedia.datatransferobjects.Media
 import ru.netology.nmedia.datatransferobjects.MediaUpload
 import ru.netology.nmedia.datatransferobjects.Post
+import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.entity.toEntity
 import ru.netology.nmedia.error.ApiError
@@ -33,26 +43,43 @@ import ru.netology.nmedia.error.NetworkError
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
 @Singleton
 class PostRepositoryImpl @Inject constructor(
     private val postDao: PostDao,
     private val apiService: PostsApiService,
+    postRemoteKeyDao: PostRemoteKeyDao,
+    appDb: AppDb,
     @ApplicationContext
     private val context: Context,
 
     ) : PostRepository {
 
 
-    override val data: Flow<PagingData<Post>> = Pager(
+    override val data: Flow<PagingData<FeedItem>> = Pager(
         config = PagingConfig(pageSize = 10, enablePlaceholders = false),
         pagingSourceFactory = {
-            PostPagingSource(
-                apiService
+            postDao.getPagingSource()
+        },
+        remoteMediator = PostRemoteMediator(
+            service = apiService,
+            postDao = postDao,
+            postRemoteKeyDao = postRemoteKeyDao,
+            appDb = appDb,
+
             )
-        }
-    ).flow
+    ).flow.map { pagingData ->
+        pagingData.map(PostEntity::toDto)
+            .insertSeparators { previous, _ ->
+                if (previous?.id?.rem(5) == 0L) {
+                    Ad(Random.nextLong(), "figma.jpg")
+                } else {
+                    null
+                }
+            }
+    }
 
 
 
