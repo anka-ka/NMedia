@@ -80,12 +80,14 @@ class PostRemoteMediator (
                     }
 
                     LoadType.APPEND -> {
-                        postRemoteKeyDao.insert(
-                            PostRemoteKeyEntity(
-                                PostRemoteKeyEntity.KeyType.BEFORE,
-                                body.last().id,
-                            ),
-                        )
+                        if (postDao.isEmpty()) {
+                            postRemoteKeyDao.insert(
+                                PostRemoteKeyEntity(
+                                    PostRemoteKeyEntity.KeyType.BEFORE,
+                                    body.last().id,
+                                ),
+                            )
+                        }
                     }
                 }
 
