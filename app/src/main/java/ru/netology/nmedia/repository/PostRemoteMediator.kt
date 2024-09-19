@@ -58,23 +58,27 @@ class PostRemoteMediator (
 
                 when (loadType) {
                     LoadType.REFRESH -> {
-                        val latestId = postDao.getLastPostId().firstOrNull()
-                        if (latestId == null) {
-                            postDao.clear()
-                        }
-
-                        postRemoteKeyDao.insert(
-                            listOf(
+                        if (postDao.isEmpty()) {
+                            postRemoteKeyDao.insert(
+                                listOf(
+                                    PostRemoteKeyEntity(
+                                        PostRemoteKeyEntity.KeyType.AFTER,
+                                        body.first().id
+                                    ),
+                                    PostRemoteKeyEntity(
+                                        PostRemoteKeyEntity.KeyType.BEFORE,
+                                        body.last().id
+                                    )
+                                )
+                            )
+                        } else {
+                            postRemoteKeyDao.insert(
                                 PostRemoteKeyEntity(
                                     PostRemoteKeyEntity.KeyType.AFTER,
-                                    body.first().id,
-                                ),
-                                PostRemoteKeyEntity(
-                                    PostRemoteKeyEntity.KeyType.BEFORE,
-                                    body.last().id,
-                                ),
+                                    body.first().id
+                                )
                             )
-                        )
+                        }
                     }
                     LoadType.PREPEND -> {
                         postRemoteKeyDao.insert(
@@ -92,6 +96,7 @@ class PostRemoteMediator (
                                 body.last().id,
                             ),
                         )
+
                     }
                 }
 
